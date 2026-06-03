@@ -40,3 +40,32 @@ export interface DeleteProductResponse {
   id: Id;
   deleted: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Contrato NORMALIZADO (API nueva, apps/api). Fechas en ISO 8601, camelCase.
+// `ProductRow` de arriba queda como referencia 1:1 del legacy.
+// ---------------------------------------------------------------------------
+
+export interface Product {
+  id: Id;
+  sku: string | null;
+  name: string | null;
+  description: string | null;
+  price: number | null;
+  category: string | null;
+  supplierId: Id | null;
+  /** ISO 8601 o null. */
+  createdAt: string | null;
+  updatedAt: string | null;
+  deletedAt: string | null;
+}
+
+/** Cuerpo para crear un producto (POST /api/products). */
+export interface CreateProductInput {
+  sku: string;
+  name: string;
+  price: number;
+  category: string;
+  supplierId: Id;
+  description?: string | null;
+}
