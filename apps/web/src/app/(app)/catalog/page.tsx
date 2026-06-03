@@ -1,5 +1,5 @@
-import { ComingSoon } from "@/presentation/shared/ComingSoon";
+import { CatalogView } from "@/presentation/catalog/CatalogView";
 
 export default function CatalogPage() {
-  return <ComingSoon module="Catálogo" />;
+  return <CatalogView />;
 }

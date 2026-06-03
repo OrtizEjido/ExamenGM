@@ -27,6 +27,15 @@
     "delete": "Delete",
     "unknownError": "Unknown error"
   },
+  "catalog": {
+    "subtitle": "Catalog products",
+    "colSku": "SKU",
+    "colName": "Name",
+    "colCategory": "Category",
+    "colPrice": "Price",
+    "error": "Could not load the catalog",
+    "empty": "No products"
+  },
   "login": {
     "subtitle": "Sign in to continue",
     "username": "Username",
