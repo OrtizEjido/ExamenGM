@@ -232,6 +232,39 @@ módulos), y recomendar si hace falta una librería.
 
 ---
 
+## Entrada 7 — 2026-06-03 15:27 (PDT) — Sidebar fijo + inicialización de git y commits segmentados
+
+### Resumen del prompt
+Autorizar el apagado del dev server en cada build; dejar el sidebar del **mismo color en
+ambos temas**; iniciar git, crear el repo remoto donde se subirá, y **segmentar los commits**
+(primero los modelos, luego lo visual).
+
+### Qué exploré
+<!-- Por completar -->
+
+### Decisiones tomadas y razones
+<!-- Por completar -->
+
+### Qué implementé (resumen)
+- `Sidebar` fijado en oscuro en ambos temas (`theme="dark"` en `AppFrame`); el `ThemeToggle`
+  sigue cambiando el resto de la UI (header, contenido, cards, login).
+- Autorización "apagar dev server antes de cada build" guardada en memoria.
+- `git init -b main` en `ERP-Migration`; corregido `.gitignore` (faltaba `.next/`, `out/`,
+  `next-env.d.ts`).
+- Commits segmentados:
+  - `c91e03a` — modelos: scaffold del monorepo + `@erp/types`.
+  - `d64d57f` — visual: `@erp/ui` + `apps/web` (i18n, tema, Clean Architecture/MVVM).
+
+### Hallazgos / notas
+- Entrada registrada con la skill `erp-journal`.
+- **`gh` (GitHub CLI) no está instalado** → el repo remoto queda pendiente de definir método
+  (instalar gh + auth, o crear repo vacío en github.com y hacer push a esa URL).
+- `next build` volvió a hacer OOM en el prerender estático (entorno con poca RAM); el código
+  **compila y typechquea OK** (`tsc --noEmit` verde en `@erp/ui` y `apps/web`). El runtime ya
+  se validó en dev en turnos previos.
+
+---
+
 ## Historial de prompts
 
 1. **Prompt 1** — Contexto del examen: leer y entender las instrucciones del archivo
@@ -252,3 +285,6 @@ módulos), y recomendar si hace falta una librería.
    textos de los componentes visuales y recomendar librería de multi-idioma.
 8. **Prompt 8** — Implementar tema claro/oscuro en los componentes visuales (y a futuro en
    los módulos) y recomendar si hace falta una librería.
+9. **Prompt 9** — Autorizar apagar el dev server en cada build, dejar el sidebar del mismo
+   color en ambos temas, iniciar git y crear el repo remoto, y segmentar los commits
+   (primero los modelos, luego lo visual).
