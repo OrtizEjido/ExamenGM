@@ -1,0 +1,16 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Reduce el flash de fondo antes de que Ant Design pinte (next-themes pone la
+   clase en <html>). El color aprox. coincide con el fondo oscuro de antd. */
+html.dark,
+html.dark body {
+  background-color: #141414;
+}

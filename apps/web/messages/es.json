@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "title": "ERP Nexus",
+    "description": "Refactor de Legacy Nexus a fullstack TypeScript"
+  },
+  "app": {
+    "name": "ERP Nexus",
+    "shortName": "ERP",
+    "ariaLabel": "Aplicación",
+    "themeToggle": "Cambiar tema (claro/oscuro)"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "catalog": "Catálogo",
+    "inventory": "Inventario",
+    "sales": "Ventas",
+    "purchases": "Compras",
+    "refunds": "Reembolsos",
+    "reports": "Reportes",
+    "notifications": "Notificaciones"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Aceptar",
+    "retry": "Reintentar",
+    "delete": "Eliminar",
+    "unknownError": "Error desconocido"
+  },
+  "login": {
+    "subtitle": "Inicia sesión para continuar",
+    "username": "Usuario",
+    "usernamePlaceholder": "Usuario",
+    "usernameRequired": "Ingresa tu usuario",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Contraseña",
+    "passwordRequired": "Ingresa tu contraseña",
+    "submit": "Entrar"
+  },
+  "comingSoon": {
+    "message": "Módulo \"{module}\" en construcción"
+  },
+  "dashboard": {
+    "subtitle": "Dashboard — vertical slice de referencia (Clean Architecture + MVVM).",
+    "statsProducts": "Productos",
+    "statsSales": "Ventas",
+    "statsRefunds": "Reembolsos",
+    "demoTitle": "Componentes compartidos (demo)",
+    "saveButton": "Guardar cambios",
+    "destructiveButton": "Acción destructiva…",
+    "deleteTitle": "¿Eliminar registro?",
+    "deleteMessage": "Esta acción no se puede deshacer.",
+    "errorTitle": "No se pudo cargar el resumen",
+    "savedToast": "Guardado (demo)",
+    "deletedToast": "Eliminado (demo)"
+  }
+}
