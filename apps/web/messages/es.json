@@ -33,6 +33,8 @@
     "colName": "Nombre",
     "colCategory": "Categoría",
     "colPrice": "Precio",
+    "searchName": "Buscar por nombre",
+    "searchSku": "Buscar por SKU (número)",
     "error": "No se pudo cargar el catálogo",
     "empty": "No hay productos"
   },
