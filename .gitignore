@@ -14,6 +14,10 @@ build/
 out/
 next-env.d.ts
 
+# prisma / sqlite (BD generada por db push + seed)
+*.db
+*.db-journal
+
 # env
 .env
 .env.local
