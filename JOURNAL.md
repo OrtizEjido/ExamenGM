@@ -265,6 +265,38 @@ ambos temas**; iniciar git, crear el repo remoto donde se subirá, y **segmentar
 
 ---
 
+## Entrada 8 — 2026-06-03 15:35 (PDT) — Skill de migración de módulos
+
+### Resumen del prompt
+Crear una skill para migrar módulos con un flujo fijo: priorizar identificar/normalizar/crear
+los modelos en `@erp/types`, luego migrar el backend y verificarlo con curl, y si pasa, migrar
+el frontend y correrlo para probar el módulo. Considerar **tablas nuevas de estatus** para
+unificar variantes (aprobado/rechazado/…) y preparación i18n (por ahora solo español).
+
+### Qué exploré
+<!-- Por completar -->
+
+### Decisiones tomadas y razones
+<!-- Por completar -->
+
+### Qué implementé (resumen)
+- Skill **`erp-module-migrator`** (`.claude/skills/erp-module-migrator/SKILL.md`, registrada)
+  con el flujo: (1) identificar modelos existentes vs faltantes y deuda de datos del módulo;
+  (2) normalizar (tablas catálogo de estatus con `code` canónico + `label_es`, montos/fechas)
+  y completar contratos en `@erp/types`; (3) backend en `apps/api` por capas + **verificación
+  con curl**; (4) frontend slice Clean Architecture/MVVM + adapter HTTP + estados carga/error/
+  vacío, **corriéndolo para probar**; (5) typecheck/build + journal.
+- Reglas clave codificadas: seed inmutable (normalizar en capa de mapeo), reutilizar modelos,
+  estatus por catálogo, solo español por ahora con `code` estable para inglés futuro, y apagar
+  el dev server antes de cada build.
+
+### Hallazgos / notas
+- Entrada registrada con la skill `erp-journal`.
+- **`apps/api` aún no existe**: la skill indica crearlo (Node+TS + ORM elegido + `/health`)
+  antes de migrar el primer módulo. Falta decidir ORM/persistencia y el primer módulo.
+
+---
+
 ## Historial de prompts
 
 1. **Prompt 1** — Contexto del examen: leer y entender las instrucciones del archivo
@@ -288,3 +320,6 @@ ambos temas**; iniciar git, crear el repo remoto donde se subirá, y **segmentar
 9. **Prompt 9** — Autorizar apagar el dev server en cada build, dejar el sidebar del mismo
    color en ambos temas, iniciar git y crear el repo remoto, y segmentar los commits
    (primero los modelos, luego lo visual).
+10. **Prompt 10** — Crear una skill para la migración de módulos (modelos → backend verificado
+    con curl → frontend corrido), con tablas de estatus para unificar variantes e i18n (solo
+    español por ahora).
