@@ -333,6 +333,36 @@ frontend y correrlo para probar.
 
 ---
 
+## Entrada 10 — 2026-06-03 16:19 (PDT) — Catálogo: buscadores, contraste y paginado
+
+### Resumen del prompt
+Feedback visual sobre la pantalla de Catálogo: poco contraste entre el fondo y los títulos de
+la tabla; "Productos del catálogo" más grande y en negrita; falta buscador; paginado a 20; y
+un segundo buscador por número de SKU que rellena con ceros a 5 dígitos (p.ej. 14 → 00014).
+
+### Qué exploré
+<!-- Por completar -->
+
+### Decisiones tomadas y razones
+<!-- Por completar -->
+
+### Qué implementé (resumen)
+- Subtítulo "Productos del catálogo" como `Typography.Title` (más grande y en negrita).
+- Tabla envuelta en `Card` blanco → contraste real del encabezado contra el fondo del layout.
+- **Dos buscadores** (filtrado en el ViewModel sobre los productos cargados): por **nombre** y
+  por **SKU**. El de SKU normaliza la entrada rellenando con ceros a la izquierda hasta 5
+  dígitos (`14` → `00014`, encontrando `SKU-00014`).
+- Paginado a **20** elementos. Textos nuevos en i18n (es/en).
+
+### Hallazgos / notas
+- Entrada registrada con la skill `erp-journal`.
+- Filtrado client-side sobre las 495 filas ya cargadas (instantáneo; sin round-trips).
+- **Verificación:** `tsc --noEmit` verde; `/catalog` recompila y responde 200 en el dev server.
+- Pendiente menor: warning de deprecación de antd (`destroyOnClose`) en `WarningDialog`;
+  `destroyOnHidden` aún no está en antd 5.22, se deja como está.
+
+---
+
 ## Historial de prompts
 
 1. **Prompt 1** — Contexto del examen: leer y entender las instrucciones del archivo
@@ -362,3 +392,5 @@ frontend y correrlo para probar.
 11. **Prompt 11** — (reenvío del 10 tras interrupción por disco lleno) Ejecutar la skill sobre
     el primer módulo: migrar **Catálogo** (Prisma+SQLite), backend verificado con curl y
     frontend corrido para probar.
+12. **Prompt 12** — Mejoras de UI en Catálogo: contraste del header, subtítulo más grande y en
+    negrita, buscador por nombre y por SKU (con padding a 5 dígitos), y paginado a 20.
