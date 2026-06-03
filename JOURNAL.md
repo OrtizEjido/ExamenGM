@@ -297,6 +297,42 @@ unificar variantes (aprobado/rechazado/…) y preparación i18n (por ahora solo 
 
 ---
 
+## Entrada 9 — 2026-06-03 16:01 (PDT) — Migración del módulo Catálogo (backend + frontend)
+
+### Resumen del prompt
+Ejecutar el flujo de la skill `erp-module-migrator` sobre el primer módulo: **Catálogo**
+(decidido Prisma + SQLite). Migrar backend verificándolo con curl y, si pasa, migrar el
+frontend y correrlo para probar.
+
+### Qué exploré
+<!-- Por completar -->
+
+### Decisiones tomadas y razones
+<!-- Por completar -->
+
+### Qué implementé (resumen)
+- **`@erp/types`**: contrato normalizado `Product` + `CreateProductInput` (camelCase, fechas ISO).
+- **`apps/api`** (nuevo): Node + Express + **Prisma/SQLite**, por capas
+  (domain/application/infrastructure/interface) con DI. Endpoints de catálogo: `GET /products`,
+  `GET /products/search`, `GET /products/:id`, `POST /products`, `DELETE /products/:id` (soft),
+  `GET /health`. ETL `prisma/seed.ts` que carga el **seed legacy inmutable** en SQLite en
+  memoria y mapea `products` al esquema nuevo (500 importados; fechas → DateTime).
+- **`apps/web`**: slice Catálogo (Clean Architecture + MVVM) — domain `Product`, puerto
+  `CatalogRepository`, caso de uso `ListProducts`, **adapter HTTP** `HttpCatalogRepository`
+  (consume apps/api) registrado en el DI, `useCatalogViewModel` + `CatalogView` (tabla antd con
+  carga/error/vacío), i18n es/en. Ruta `/catalog` reemplaza el `ComingSoon`.
+
+### Hallazgos / notas
+- Entrada registrada con la skill `erp-journal`.
+- **Backend verificado con curl**: health 200; lista 495 activos (5 soft-deleted filtrados de
+  500); get por id; search "Café"=26; 404 correcto; POST 201 + validación 400; DELETE soft 200.
+- **Frontend**: `tsc --noEmit` verde; `/catalog` compila y responde 200; CORS del API permite
+  el origen del front (`Access-Control-Allow-Origin: *`) → la tabla recibe los 495 productos.
+- Incidencias de entorno: disco C: llegó al 100% (se liberó espacio); `next build` se evita por
+  OOM/disco — verificación por `tsc` + dev server. Prisma 5 (aviso de upgrade ignorado).
+
+---
+
 ## Historial de prompts
 
 1. **Prompt 1** — Contexto del examen: leer y entender las instrucciones del archivo
@@ -323,3 +359,6 @@ unificar variantes (aprobado/rechazado/…) y preparación i18n (por ahora solo 
 10. **Prompt 10** — Crear una skill para la migración de módulos (modelos → backend verificado
     con curl → frontend corrido), con tablas de estatus para unificar variantes e i18n (solo
     español por ahora).
+11. **Prompt 11** — (reenvío del 10 tras interrupción por disco lleno) Ejecutar la skill sobre
+    el primer módulo: migrar **Catálogo** (Prisma+SQLite), backend verificado con curl y
+    frontend corrido para probar.
