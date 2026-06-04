@@ -49,6 +49,40 @@ export type ReportExportRow =
     }
   | { product_id: Id; warehouse_id: Id; quantity: number; pad: 0 };
 
+// ---------------------------------------------------------------------------
+// Contrato NORMALIZADO (API nueva, apps/api).
+// ---------------------------------------------------------------------------
+
+/** Resumen de ventas por categoría de producto. */
+export interface CategorySummaryRow {
+  category: string | null;
+  nSales: number;
+  gross: number;
+}
+
+/** Resumen de ventas por proveedor. */
+export interface SupplierSummaryRow {
+  supplier: string | null;
+  nSales: number;
+  gross: number;
+}
+
+/** Totales agregados del año (con IVA 16%). */
+export interface AggregateSummary {
+  year: number;
+  totalSales: number;
+  qtyTotal: number;
+  subtotal: number;
+  iva: number;
+  total: number;
+}
+
+/**
+ * Tipos de reporte exportables a Excel.
+ * 'category' | 'supplier' | 'aggregate'
+ */
+export type ReportType = "category" | "supplier" | "aggregate";
+
 // --- Exports ---
 
 /** GET /api/exports/pivot?year&a&b */
