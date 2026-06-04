@@ -5,6 +5,7 @@ import cors from "cors";
 import { createContainer } from "./infrastructure/di/container";
 import { healthRouter } from "./interface/http/healthRoutes";
 import { createCatalogRouter } from "./interface/http/catalogRoutes";
+import { createNotificationRouter } from "./interface/http/notificationRoutes";
 
 const PORT = Number(process.env.PORT ?? 4000);
 
@@ -15,6 +16,7 @@ app.use(express.json());
 const services = createContainer();
 app.use("/api", healthRouter());
 app.use("/api/products", createCatalogRouter(services));
+app.use("/api/notifications", createNotificationRouter(services));
 
 // Middleware de error final.
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

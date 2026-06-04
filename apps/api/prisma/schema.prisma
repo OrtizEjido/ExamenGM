@@ -22,3 +22,26 @@ model Product {
 
   @@map("products")
 }
+
+// Catálogo de estatus de notificación (unifica variantes legacy: read/READ/leido/unread).
+// `code` es el valor canónico estable; `labelEs` es la etiqueta en español (se podrá
+// añadir `labelEn` a futuro). El frontend resuelve la etiqueta por idioma vía i18n.
+model NotificationStatus {
+  code          String         @id
+  labelEs       String         @map("label_es")
+  notifications Notification[]
+
+  @@map("notification_statuses")
+}
+
+model Notification {
+  id         Int                @id @default(autoincrement())
+  userId     Int                @map("user_id")
+  message    String?
+  kind       String?
+  statusCode String             @map("status_code")
+  status     NotificationStatus @relation(fields: [statusCode], references: [code])
+  createdAt  DateTime?          @map("created_at")
+
+  @@map("notifications")
+}
