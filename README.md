@@ -206,7 +206,8 @@ el **ETL** (`prisma/seed.ts` + `etl-helpers.ts`) al poblar la BD nueva:
 
 ---
 
-## Bitácora
+## Documentación
 
-Las decisiones tomadas a lo largo de la migración están documentadas en
-[`JOURNAL.md`](./JOURNAL.md), con el detalle de qué se exploró y por qué en cada fase.
+- **[Architecture Decision Records](./docs/adr/)** — las decisiones técnicas clave (monorepo,
+  tablas catálogo, cifrado, paginado server-side, ETL) con contexto, opciones y consecuencias.
+- **[`JOURNAL.md`](./JOURNAL.md)** — bitácora por fase con el detalle de qué se exploró y por qué.
