@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 import type { Notification } from "../../domain/notifications/Notification";
 import type {
   CreateNotificationData,
@@ -7,14 +7,8 @@ import type {
 
 const VALID_KINDS = ["info", "warn", "alert", "system", "marketing"];
 
-interface NotificationRow {
-  id: number;
-  userId: number;
-  message: string | null;
-  kind: string | null;
-  read: boolean;
-  createdAt: Date | null;
-}
+/** Tipo inferido por Prisma para una fila de `notifications`. */
+type NotificationRow = Prisma.NotificationGetPayload<Record<string, never>>;
 
 function toDomain(row: NotificationRow): Notification {
   return {
