@@ -446,8 +446,9 @@ Hacer el login funcional: tabla **roles** (admin/normal), `role_id` en usuarios,
 para poder autenticar. Backend verificado con curl + vista de login que llama al API y guarda el JWT.
 
 ### Qué exploré
-
+Establecer el seguridad en el login
 ### Decisiones tomadas y razones
+Creacion de tabla de roles para expansion de usuarios con acceso a distintos modulos a futuro
 
 ### Qué implementé (resumen)
 - **Cifrado AES-256-CBC** (`passwordCipher.ts`) con IV aleatorio, formato `iv_hex:ciphertext_hex`,
@@ -474,9 +475,9 @@ Dos ajustes: (1) el campo `kind` de notificación debe ser su **propia tabla cat
 `PrismaNotificationRepository` y cargar notificaciones **distintas según el usuario logueado**.
 
 ### Qué exploré
-
+Solucionar algo que no se tomo en cuenta en primer lugar y es diferenciar las notificaciones por user
 ### Decisiones tomadas y razones
-
+El campo kind en lugar de almacenar texto almacena un id para relacionarlo con la nueva tabla tipoNotificacion
 ### Qué implementé (resumen)
 - Tabla catálogo **`notification_kinds`** (`code` + `label_es`, 5 tipos); `Notification.kindId`
   FK. El repositorio hace `join` y expone `kind` como string al dominio → **cero cambios** en API/FE.
@@ -499,8 +500,9 @@ búsqueda deje de filtrar mientras se escribe — usar un **botón** que llame a
 distinto según se busque por nombre o por SKU. Reflejar estos patrones en la skill de migración.
 
 ### Qué exploré
-
+Optimizar carga de elementos en modulo donde podria cargarse demasiados elementos
 ### Decisiones tomadas y razones
+Establecer que no cargue todos los elementos para evitar una carga inicial del modulo lenta
 
 ### Qué implementé (resumen)
 - **API**: `GET /products?page&limit` → `{items,total,page,limit,pages}` (`$transaction`
@@ -523,8 +525,10 @@ Migrar el módulo **Inventario** con la skill. Además, fijar una regla: en adel
 suite completa.
 
 ### Qué exploré
+Note una oportunidad de optimizar el tiempo de la IA
 
 ### Decisiones tomadas y razones
+Que solo ejecute test cuando sea necesario para reducir consumo de tokens y actividad de la computadora ademas de recibir respuestas mas rapido
 
 ### Qué implementé (resumen)
 - **Prisma**: `Warehouse` + `InventoryStock` (PK compuesta `productId+warehouseId`). ETL: 3
@@ -546,9 +550,9 @@ suite completa.
 Migrar el módulo **Devoluciones (reembolsos)** con la skill.
 
 ### Qué exploré
-
+Ver como funcionaba la skill de migracion de modulo ahora que recibio nuevo aprendizaje
 ### Decisiones tomadas y razones
-
+Migrar directamente el modulo devoluciones para avanzar con la migracion total
 ### Qué implementé (resumen)
 - **Normalización (3 deudas a la vez)**: tabla catálogo `refund_statuses` (unifica
   `Approved/aprobada/done/pending/rejected` → 4 codes); `amount` TEXT → **Float**; `created_at`
@@ -569,8 +573,10 @@ Migrar **Reportes**. El legacy, al exportar, devolvía un **JSON crudo**; en su 
 generar una **hoja de cálculo** descargable.
 
 ### Qué exploré
+Mejorar la exportacion 
 
 ### Decisiones tomadas y razones
+Generar un excel al exportar, suele ser muy pedido por los clientes y un json puede marearlos
 
 ### Qué implementé (resumen)
 - Migré (solo lectura) `sales`/`sale_items`/`suppliers` para alimentar los reportes.
@@ -595,8 +601,10 @@ Crear el **README** raíz (arranque en máquina limpia, estructura del monorepo,
 alcance) y **3–5 ADRs** concisos (<50 líneas) con las decisiones más importantes.
 
 ### Qué exploré
+Creacion de instrucciones para instalacion
 
 ### Decisiones tomadas y razones
+Dejarle el readme a la IA para que analizara lo requerido
 
 ### Qué implementé (resumen)
 - **`README.md`**: pasos de arranque (`npm install` → `.env` → `prisma generate/push/seed` →
