@@ -1,24 +1,21 @@
-/** DOMINIO — Tipos de datos de reportes. */
+/**
+ * DOMINIO — Reportes exportables. Espejo de `export_report(report_type, filter_clause)`
+ * del legacy, con dos tipos: ventas e inventario.
+ */
 
-export interface CategorySummary {
-  category: string | null;
-  nSales: number;
-  gross: number;
+/** Fila del reporte de ventas. `total` (TEXT en legacy) normalizado a número. */
+export interface SalesReportRow {
+  id: number;
+  userId: number | null;
+  total: number | null;
+  status: string | null;
 }
 
-export interface SupplierSummary {
-  supplier: string | null;
-  nSales: number;
-  gross: number;
+/** Fila del reporte de inventario. */
+export interface InventoryReportRow {
+  productId: number;
+  warehouseId: number;
+  quantity: number;
 }
 
-export interface AggregateSummary {
-  year: number;
-  totalSales: number;
-  qtyTotal: number;
-  subtotal: number;
-  iva: number;
-  total: number;
-}
-
-export type ReportType = "category" | "supplier" | "aggregate";
+export type ReportType = "sales" | "inventory";

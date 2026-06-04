@@ -1,8 +1,10 @@
-import type { AggregateSummary, CategorySummary, SupplierSummary } from "../../domain/reports/Report";
+import type { InventoryReportRow, SalesReportRow } from "../../domain/reports/Report";
 
-/** APLICACIÓN — Puerto del repositorio de reportes (solo lectura). */
+/**
+ * APLICACIÓN — Puerto del repositorio de reportes (solo lectura).
+ * `fromId` filtra `id > fromId` (equivalente al `filter_clause` legacy; default 0 = todo).
+ */
 export interface ReportRepository {
-  categorySummary(year: number): Promise<CategorySummary[]>;
-  supplierSummary(year: number): Promise<SupplierSummary[]>;
-  aggregateSummary(year: number): Promise<AggregateSummary>;
+  salesReport(fromId: number): Promise<SalesReportRow[]>;
+  inventoryReport(fromId: number): Promise<InventoryReportRow[]>;
 }

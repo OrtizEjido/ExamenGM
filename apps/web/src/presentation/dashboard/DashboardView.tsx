@@ -40,78 +40,9 @@ export function DashboardView() {
 
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>
-      <Typography.Paragraph type="secondary">{t("subtitle")}</Typography.Paragraph>
+      
 
-      {status === "loading" && (
-        <Row gutter={16}>
-          {[0, 1, 2].map((i) => (
-            <Col xs={24} sm={8} key={i}>
-              <Card>
-                <Skeleton active paragraph={{ rows: 1 }} />
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      )}
-
-      {status === "error" && (
-        <Alert
-          type="error"
-          showIcon
-          message={t("errorTitle")}
-          description={error ?? tCommon("unknownError")}
-          action={
-            <Button size="small" onClick={reload}>
-              {tCommon("retry")}
-            </Button>
-          }
-        />
-      )}
-
-      {status === "ready" && summary && (
-        <Row gutter={16}>
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic title={t("statsProducts")} value={summary.productsCount} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic title={t("statsSales")} value={summary.salesCount} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic title={t("statsRefunds")} value={summary.refundsCount} />
-            </Card>
-          </Col>
-        </Row>
-      )}
-
-      <Card title={t("demoTitle")}>
-        <Space wrap>
-          <SaveButton htmlType="button" loading={saving} onClick={handleSave}>
-            {t("saveButton")}
-          </SaveButton>
-          <Button danger onClick={() => setWarnOpen(true)}>
-            {t("destructiveButton")}
-          </Button>
-        </Space>
-      </Card>
-
-      <WarningDialog
-        open={warnOpen}
-        danger
-        title={t("deleteTitle")}
-        message={t("deleteMessage")}
-        confirmText={tCommon("delete")}
-        cancelText={tCommon("cancel")}
-        onConfirm={() => {
-          setWarnOpen(false);
-          message.warning(t("deletedToast"));
-        }}
-        onCancel={() => setWarnOpen(false)}
-      />
+      
     </Space>
   );
 }

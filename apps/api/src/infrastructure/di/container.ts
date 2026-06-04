@@ -22,7 +22,7 @@ import {
   CreateRefund, ApproveRefund, RejectRefund,
 } from "../../application/refunds/useCases";
 import {
-  GetCategorySummary, GetSupplierSummary, GetAggregateSummary,
+  GetSalesReport, GetInventoryReport,
 } from "../../application/reports/useCases";
 import { Login } from "../../application/auth/Login";
 import type { LoginInput, LoginResult } from "../../application/auth/Login";
@@ -34,7 +34,7 @@ import type { InventoryItem, Warehouse } from "../../domain/inventory/InventoryI
 import type { PageParams as InvParams, PageResult as InvResult } from "../../application/inventory/InventoryRepository";
 import type { Refund } from "../../domain/refunds/Refund";
 import type { CreateRefundData, RefundStatusCode } from "../../application/refunds/RefundRepository";
-import type { AggregateSummary, CategorySummary, SupplierSummary } from "../../domain/reports/Report";
+import type { InventoryReportRow, SalesReportRow } from "../../domain/reports/Report";
 
 export interface AppServices {
   login: { execute(input: LoginInput): Promise<LoginResult | null> };
@@ -59,9 +59,8 @@ export interface AppServices {
   approveRefund: { execute(id: number, approvedBy: number): Promise<Refund | null> };
   rejectRefund: { execute(id: number): Promise<Refund | null> };
   // reports
-  getCategorySummary: { execute(year: number): Promise<CategorySummary[]> };
-  getSupplierSummary: { execute(year: number): Promise<SupplierSummary[]> };
-  getAggregateSummary: { execute(year: number): Promise<AggregateSummary> };
+  getSalesReport: { execute(fromId?: number): Promise<SalesReportRow[]> };
+  getInventoryReport: { execute(fromId?: number): Promise<InventoryReportRow[]> };
   // notifications
   listNotifications: { execute(userId: number): Promise<Notification[]> };
   markNotificationRead: { execute(id: number): Promise<Notification | null> };
@@ -96,9 +95,8 @@ export function createContainer(): AppServices {
     createRefund: new CreateRefund(refundRepository),
     approveRefund: new ApproveRefund(refundRepository),
     rejectRefund: new RejectRefund(refundRepository),
-    getCategorySummary: new GetCategorySummary(reportRepository),
-    getSupplierSummary: new GetSupplierSummary(reportRepository),
-    getAggregateSummary: new GetAggregateSummary(reportRepository),
+    getSalesReport: new GetSalesReport(reportRepository),
+    getInventoryReport: new GetInventoryReport(reportRepository),
     listNotifications: new ListNotifications(notificationRepository),
     markNotificationRead: new MarkNotificationRead(notificationRepository),
     createNotification: new CreateNotification(notificationRepository),

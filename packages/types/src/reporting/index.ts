@@ -51,37 +51,32 @@ export type ReportExportRow =
 
 // ---------------------------------------------------------------------------
 // Contrato NORMALIZADO (API nueva, apps/api).
+// Equivalente a `export_report(report_type, filter_clause)` del legacy:
+//   sales     -> id, user_id, total, status   (WHERE id > filter)
+//   inventory -> product_id, warehouse_id, quantity   (WHERE product_id > filter)
+// El monto `total` (TEXT en legacy) se normaliza a número.
 // ---------------------------------------------------------------------------
 
-/** Resumen de ventas por categoría de producto. */
-export interface CategorySummaryRow {
-  category: string | null;
-  nSales: number;
-  gross: number;
+/** Fila del reporte de ventas (report_type = 'sales'). */
+export interface SalesReportRow {
+  id: Id;
+  userId: Id | null;
+  total: number | null;
+  status: string | null;
 }
 
-/** Resumen de ventas por proveedor. */
-export interface SupplierSummaryRow {
-  supplier: string | null;
-  nSales: number;
-  gross: number;
-}
-
-/** Totales agregados del año (con IVA 16%). */
-export interface AggregateSummary {
-  year: number;
-  totalSales: number;
-  qtyTotal: number;
-  subtotal: number;
-  iva: number;
-  total: number;
+/** Fila del reporte de inventario (report_type = 'inventory'). */
+export interface InventoryReportRow {
+  productId: Id;
+  warehouseId: Id;
+  quantity: number;
 }
 
 /**
- * Tipos de reporte exportables a Excel.
- * 'category' | 'supplier' | 'aggregate'
+ * Tipos de reporte exportables a Excel (espejo de `export_report`).
+ * 'sales' | 'inventory'
  */
-export type ReportType = "category" | "supplier" | "aggregate";
+export type ReportType = "sales" | "inventory";
 
 // --- Exports ---
 

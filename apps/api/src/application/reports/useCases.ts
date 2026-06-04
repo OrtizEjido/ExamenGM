@@ -1,17 +1,12 @@
-import type { AggregateSummary, CategorySummary, SupplierSummary } from "../../domain/reports/Report";
+import type { InventoryReportRow, SalesReportRow } from "../../domain/reports/Report";
 import type { ReportRepository } from "./ReportRepository";
 
-export class GetCategorySummary {
+export class GetSalesReport {
   constructor(private readonly repo: ReportRepository) {}
-  execute(year: number): Promise<CategorySummary[]> { return this.repo.categorySummary(year); }
+  execute(fromId = 0): Promise<SalesReportRow[]> { return this.repo.salesReport(fromId); }
 }
 
-export class GetSupplierSummary {
+export class GetInventoryReport {
   constructor(private readonly repo: ReportRepository) {}
-  execute(year: number): Promise<SupplierSummary[]> { return this.repo.supplierSummary(year); }
-}
-
-export class GetAggregateSummary {
-  constructor(private readonly repo: ReportRepository) {}
-  execute(year: number): Promise<AggregateSummary> { return this.repo.aggregateSummary(year); }
+  execute(fromId = 0): Promise<InventoryReportRow[]> { return this.repo.inventoryReport(fromId); }
 }

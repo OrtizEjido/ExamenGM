@@ -1,73 +1,37 @@
 import type { PrismaClient } from "@prisma/client";
-import type { AggregateSummary, CategorySummary, SupplierSummary } from "../../domain/reports/Report";
+import type { InventoryReportRow, SalesReportRow } from "../../domain/reports/Report";
 import type { ReportRepository } from "../../application/reports/ReportRepository";
 
-const IVA_RATE = 0.16;
-
-/** INFRAESTRUCTURA — Adapter Prisma del puerto ReportRepository. */
+/** INFRAESTRUCTURA — Adapter Prisma del puerto ReportRepository.
+ *  Espejo de `export_report`: filtra `id > fromId` (default 0 = todas las filas).
+ */
 export class PrismaReportRepository implements ReportRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async categorySummary(year: number): Promise<CategorySummary[]> {
-    // Los datos de ventas no están en nuestro esquema Prisma aún (módulo ventas pendiente),
-    // pero los productos sí. Usamos rawQuery contra las tablas legacy que ya existen en la BD.
-    const rows = await this.prisma.$queryRaw<
-      Array<{ category: string | null; n_sales: bigint; gross: number | null }>
-    >`
-      SELECT p.category, COUNT(si.id) AS n_sales, SUM(si.qty * si.unit_price) AS gross
-      FROM sale_items si
-      JOIN products p ON p.id = si.product_id
-      JOIN sales s ON s.id = si.sale_id
-      WHERE p.deleted_at IS NULL
-      GROUP BY p.category
-      ORDER BY gross DESC
-    `;
+  // report_type = 'sales' → SELECT id, user_id, total, status FROM sales WHERE id > ?
+  async salesReport(fromId: number): Promise<SalesReportRow[]> {
+    const rows = await this.prisma.sale.findMany({
+      where: { id: { gt: fromId } },
+      orderBy: { id: "asc" },
+    });
     return rows.map((r) => ({
-      category: r.category,
-      nSales: Number(r.n_sales),
-      gross: r.gross ?? 0,
+      id: r.id,
+      userId: r.userId,
+      total: r.total == null ? null : Number(r.total), // TEXT → número
+      status: r.status,
     }));
   }
 
-  async supplierSummary(year: number): Promise<SupplierSummary[]> {
-    const rows = await this.prisma.$queryRaw<
-      Array<{ supplier: string | null; n_sales: bigint; gross: number | null }>
-    >`
-      SELECT sup.name AS supplier, COUNT(si.id) AS n_sales, SUM(si.qty * si.unit_price) AS gross
-      FROM sale_items si
-      JOIN products p ON p.id = si.product_id
-      JOIN suppliers sup ON sup.id = p.supplier_id
-      JOIN sales s ON s.id = si.sale_id
-      WHERE p.deleted_at IS NULL
-      GROUP BY sup.name
-      ORDER BY gross DESC
-    `;
+  // report_type = 'inventory' → SELECT product_id, warehouse_id, quantity FROM inventory_stock WHERE product_id > ?
+  async inventoryReport(fromId: number): Promise<InventoryReportRow[]> {
+    const rows = await this.prisma.inventoryStock.findMany({
+      where: { productId: { gt: fromId } },
+      orderBy: [{ productId: "asc" }, { warehouseId: "asc" }],
+    });
     return rows.map((r) => ({
-      supplier: r.supplier,
-      nSales: Number(r.n_sales),
-      gross: r.gross ?? 0,
+      productId: r.productId,
+      warehouseId: r.warehouseId,
+      quantity: r.quantity,
     }));
-  }
-
-  async aggregateSummary(year: number): Promise<AggregateSummary> {
-    const rows = await this.prisma.$queryRaw<
-      Array<{ qty_total: bigint; subtotal: number | null; n_sales: bigint }>
-    >`
-      SELECT COUNT(s.id) AS n_sales, SUM(si.qty) AS qty_total,
-             SUM(si.qty * si.unit_price) AS subtotal
-      FROM sale_items si
-      JOIN sales s ON s.id = si.sale_id
-    `;
-    const r = rows[0];
-    const subtotal = r?.subtotal ?? 0;
-    const iva = subtotal * IVA_RATE;
-    return {
-      year,
-      totalSales: Number(r?.n_sales ?? 0),
-      qtyTotal: Number(r?.qty_total ?? 0),
-      subtotal,
-      iva,
-      total: subtotal + iva,
-    };
   }
 }
