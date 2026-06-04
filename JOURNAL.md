@@ -438,6 +438,179 @@ cambio en campos de las tablas/modelos para optimizacion
 
 ---
 
+## Entrada 13 — 2026-06-03 18:40 (PDT) — Login funcional (JWT + AES-256 + roles)
+
+### Resumen del prompt
+Hacer el login funcional: tabla **roles** (admin/normal), `role_id` en usuarios, y contraseñas
+**cifradas** conservando los mismos valores (`1234`) con algoritmo de cifrado **y descifrado**
+para poder autenticar. Backend verificado con curl + vista de login que llama al API y guarda el JWT.
+
+### Qué exploré
+
+### Decisiones tomadas y razones
+
+### Qué implementé (resumen)
+- **Cifrado AES-256-CBC** (`passwordCipher.ts`) con IV aleatorio, formato `iv_hex:ciphertext_hex`,
+  clave en `CIPHER_KEY`. Funciones `encrypt`/`decrypt`/`verify`.
+- **Prisma**: tabla catálogo `roles` (`code` + `label_es`) y `users` con FK `role_id` +
+  `encrypted_password`. ETL: 5 usuarios migrados (is_admin 0/1 → rol), contraseñas cifradas.
+- **Backend**: caso de uso `Login` (verifica descifrando, firma **JWT** HS256 8 h con claim `role`);
+  `POST /api/auth/login` → `{token, user}` | 401 | 400.
+- **Frontend**: `useLoginViewModel` + `HttpAuthRepository` + `sessionStore` (localStorage);
+  el login guarda el JWT y redirige a `/dashboard`.
+
+### Hallazgos / notas
+- **Por qué AES y no bcrypt**: el requisito exige *descifrar* la contraseña; bcrypt es
+  unidireccional. Trade-off documentado en ADR 0003.
+- Verificado con curl: `admin/1234`→rol admin; `vendor1/1234`→normal; password mala 401; faltantes 400.
+
+---
+
+## Entrada 14 — 2026-06-03 18:55 (PDT) — Notificaciones: tipo por catálogo + usuario de sesión
+
+### Resumen del prompt
+Dos ajustes: (1) el campo `kind` de notificación debe ser su **propia tabla catálogo**
+(`TipoNotificacion`) referenciada por id; (2) corregir errores de tipo en
+`PrismaNotificationRepository` y cargar notificaciones **distintas según el usuario logueado**.
+
+### Qué exploré
+
+### Decisiones tomadas y razones
+
+### Qué implementé (resumen)
+- Tabla catálogo **`notification_kinds`** (`code` + `label_es`, 5 tipos); `Notification.kindId`
+  FK. El repositorio hace `join` y expone `kind` como string al dominio → **cero cambios** en API/FE.
+- Fix de tipos: reemplacé la interfaz manual por `Prisma.NotificationGetPayload` (deja de marcar
+  errores en VS Code).
+- **Hook `useSession`** (lee la sesión de localStorage, SSR-safe); el ViewModel usa
+  `session.user.id` real en vez del `DEMO_USER_ID` fijo.
+
+### Hallazgos / notas
+- Las entidades superiores nunca ven el `id` del catálogo (Anti-Corruption Layer en el repo).
+- Verificado: admin (id 1) ve 7 notificaciones; user (id 2) ve 9 — conjuntos distintos.
+
+---
+
+## Entrada 15 — 2026-06-03 19:10 (PDT) — Catálogo: paginado server-side + búsqueda por endpoints
+
+### Resumen del prompt
+Optimizar el catálogo: endpoint que consulte **de 20 en 20** (paginado server-side) y que la
+búsqueda deje de filtrar mientras se escribe — usar un **botón** que llame a un endpoint
+distinto según se busque por nombre o por SKU. Reflejar estos patrones en la skill de migración.
+
+### Qué exploré
+
+### Decisiones tomadas y razones
+
+### Qué implementé (resumen)
+- **API**: `GET /products?page&limit` → `{items,total,page,limit,pages}` (`$transaction`
+  findMany+count); endpoints dedicados `/products/search/name` y `/products/search/sku`
+  (el padding `14→00014` se movió al backend). 495 productos = 25 páginas de 20.
+- **Frontend**: tabla con paginado server-side (antd `onChange`), dos inputs cada uno con su
+  botón "Buscar" (+ Enter), botón "×" para limpiar; **sin filtrado client-side**.
+- **Skill** `erp-module-migrator` ampliada: regla de paginado si la tabla > ~50 registros y de
+  endpoint dedicado por campo buscable; el FE busca por botón, no por tecla.
+
+### Hallazgos / notas
+
+---
+
+## Entrada 16 — 2026-06-03 19:35 (PDT) — Módulo Inventario + regla de tests selectivos
+
+### Resumen del prompt
+Migrar el módulo **Inventario** con la skill. Además, fijar una regla: en adelante ejecutar
+**solo los tests nuevos** o los que fallaron / pudieron verse afectados por los cambios, no la
+suite completa.
+
+### Qué exploré
+
+### Decisiones tomadas y razones
+
+### Qué implementé (resumen)
+- **Prisma**: `Warehouse` + `InventoryStock` (PK compuesta `productId+warehouseId`). ETL: 3
+  almacenes, 1500 filas de stock.
+- **API** (paginado, 1485 activos = 75 páginas): `GET /inventory?page`, `/inventory/warehouses`,
+  `/inventory/warehouse/:id`, `/inventory/search/name`. Verificado con curl (filtro de almacén,
+  búsqueda, 400 en id inválido).
+- **Frontend**: tabla paginada + `Select` de almacén + buscador por producto; cantidad con tag
+  verde/naranja/rojo por umbral.
+- **Skill**: añadida la regla de ejecutar solo los tests relevantes (nuevos + capas tocadas + los rojos).
+
+### Hallazgos / notas
+
+---
+
+## Entrada 17 — 2026-06-03 19:55 (PDT) — Módulo Devoluciones (estatus, monto y fecha normalizados)
+
+### Resumen del prompt
+Migrar el módulo **Devoluciones (reembolsos)** con la skill.
+
+### Qué exploré
+
+### Decisiones tomadas y razones
+
+### Qué implementé (resumen)
+- **Normalización (3 deudas a la vez)**: tabla catálogo `refund_statuses` (unifica
+  `Approved/aprobada/done/pending/rejected` → 4 codes); `amount` TEXT → **Float**; `created_at`
+  (4 formatos) → **DateTime**. Helpers `parseAmount`/`normalizeRefundStatus` testeados.
+- **API**: `GET /refunds`, `/search/status`, `/by-user/:uid`, `/:id`; `POST /`, `/:id/approve`,
+  `/:id/reject`. Verificado con curl (estatus unificados, monto numérico, aprobar/rechazar).
+- **Frontend**: tabla con `Select` de estado y tags de color por estatus.
+
+### Hallazgos / notas
+- Se corrigió el orden de borrado en el seed (stock antes que productos) que rompía una FK.
+
+---
+
+## Entrada 18 — 2026-06-03 20:20 (PDT) — Módulo Reportes + exportación a Excel
+
+### Resumen del prompt
+Migrar **Reportes**. El legacy, al exportar, devolvía un **JSON crudo**; en su lugar se quiere
+generar una **hoja de cálculo** descargable.
+
+### Qué exploré
+
+### Decisiones tomadas y razones
+
+### Qué implementé (resumen)
+- Migré (solo lectura) `sales`/`sale_items`/`suppliers` para alimentar los reportes.
+- **3 reportes** desde la lógica de agregación del legacy: por categoría, por proveedor y
+  resumen agregado (con IVA 16 %). Endpoints JSON + `GET /reports/export/xlsx?type=` que
+  transmite un **`.xlsx` real** vía **ExcelJS** (encabezados con estilo, fila de totales).
+- **Frontend**: `Segmented` para alternar reportes, selector de año y botón "Exportar Excel"
+  (descarga directa).
+
+### Hallazgos / notas
+- El legacy nunca generó Excel: su botón devolvía `{"csv": "...", "count": N}` en JSON.
+- Limitación conocida: el filtro por año aún no aplica (fechas de ventas sin normalizar);
+  se resolverá al migrar Ventas. Test de binario xlsx: se verifica la firma ZIP `PK` con
+  `.responseType("blob")`.
+
+---
+
+## Entrada 19 — 2026-06-03 20:45 (PDT) — Cierre de documentación: README + ADRs
+
+### Resumen del prompt
+Crear el **README** raíz (arranque en máquina limpia, estructura del monorepo, decisiones y
+alcance) y **3–5 ADRs** concisos (<50 líneas) con las decisiones más importantes.
+
+### Qué exploré
+
+### Decisiones tomadas y razones
+
+### Qué implementé (resumen)
+- **`README.md`**: pasos de arranque (`npm install` → `.env` → `prisma generate/push/seed` →
+  `dev`), credenciales, árbol del monorepo con las capas Clean Architecture/MVVM, tabla del
+  stack con justificación, y los dominios en alcance.
+- **5 ADRs** en `docs/adr/` (27–29 líneas c/u): monorepo+Clean Architecture, tablas catálogo
+  de estatus, cifrado reversible AES-256, paginado/búsqueda server-side, ETL sobre seed
+  inmutable. Índice en `docs/adr/README.md` y enlace desde el README.
+
+### Hallazgos / notas
+- Cada ADR sigue el formato: Contexto · Opciones (≥2) · Decisión · Consecuencias (corto/largo plazo).
+
+---
+
 ## Historial de prompts
 
 1. **Prompt 1** — Contexto del examen: leer y entender las instrucciones del archivo
@@ -474,3 +647,23 @@ cambio en campos de las tablas/modelos para optimizacion
     y frontend probado en navegador.
 14. **Prompt 14** — Modelar el estatus de notificación como **booleano `read`** (0/1) en vez
     de catálogo; la UI lee el bool y dibuja No leída/Leída, y debe cambiar también en inglés.
+15. **Prompt 15** — Hacer el **login funcional**: tabla de roles (admin/normal), `role_id` en
+    usuarios y contraseñas cifradas (mismos valores) con cifrado **y** descifrado para autenticar.
+16. **Prompt 16** — Corregir errores de tipo en `PrismaNotificationRepository` y cargar
+    notificaciones distintas según el usuario logueado.
+17. **Prompt 17** — Convertir el campo `kind` de notificación en su **propia tabla catálogo**
+    (`TipoNotificacion`), guardando el id relacionado en vez del texto.
+18. **Prompt 18** — Optimizar el catálogo: paginado server-side **de 20 en 20** y búsqueda por
+    **botón** contra endpoints distintos (por nombre o por SKU).
+19. **Prompt 19** — Añadir a la skill: detectar muchos registros → crear paginado; campos
+    buscables → crear sus endpoints de búsqueda.
+20. **Prompt 20** — Migrar el módulo **Inventario** con la skill.
+21. **Prompt 21** — En adelante, ejecutar **solo los tests** nuevos, los que fallaron antes o
+    los que pudieron verse afectados por los cambios (no la suite completa).
+22. **Prompt 22** — Migrar el módulo **Devoluciones (reembolsos)** con la skill.
+23. **Prompt 23** — Migrar el módulo **Reportes**, generando una **hoja de cálculo** descargable
+    en vez del JSON crudo del legacy.
+24. **Prompt 24** — Crear el **README** raíz (arranque en limpio, estructura del monorepo,
+    decisiones técnicas y dominios en alcance).
+25. **Prompt 25** — Crear **3–5 ADRs** concisos (<50 líneas) con las decisiones más importantes
+    (contexto, opciones, decisión, consecuencias).
