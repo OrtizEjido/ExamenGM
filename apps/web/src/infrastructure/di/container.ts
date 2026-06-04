@@ -1,18 +1,16 @@
 import { GetDashboardSummary } from "@/application/dashboard/GetDashboardSummary";
 import { InMemoryDashboardRepository } from "@/infrastructure/dashboard/InMemoryDashboardRepository";
-import {
-  ListProducts,
-  SearchProductsByName,
-  SearchProductsBySku,
-} from "@/application/catalog/ListProducts";
+import { ListProducts, SearchProductsByName, SearchProductsBySku } from "@/application/catalog/ListProducts";
 import { HttpCatalogRepository } from "@/infrastructure/catalog/HttpCatalogRepository";
-import {
-  ListNotifications,
-  MarkNotificationRead,
-} from "@/application/notifications/useCases";
+import { ListNotifications, MarkNotificationRead } from "@/application/notifications/useCases";
 import { HttpNotificationsRepository } from "@/infrastructure/notifications/HttpNotificationsRepository";
 import { LoginUseCase } from "@/application/auth/LoginUseCase";
 import { HttpAuthRepository } from "@/infrastructure/auth/HttpAuthRepository";
+import {
+  ListInventory, ListInventoryByWarehouse,
+  SearchInventoryByProductName, ListWarehouses,
+} from "@/application/inventory/useCases";
+import { HttpInventoryRepository } from "@/infrastructure/inventory/HttpInventoryRepository";
 
 export interface AppServices {
   getDashboardSummary: GetDashboardSummary;
@@ -22,17 +20,26 @@ export interface AppServices {
   listNotifications: ListNotifications;
   markNotificationRead: MarkNotificationRead;
   loginUseCase: LoginUseCase;
+  listInventory: ListInventory;
+  listInventoryByWarehouse: ListInventoryByWarehouse;
+  searchInventoryByProductName: SearchInventoryByProductName;
+  listWarehouses: ListWarehouses;
 }
 
 export function createContainer(): AppServices {
-  const catalogRepository = new HttpCatalogRepository();
+  const catalogRepo = new HttpCatalogRepository();
+  const inventoryRepo = new HttpInventoryRepository();
   return {
     getDashboardSummary: new GetDashboardSummary(new InMemoryDashboardRepository()),
-    listProducts: new ListProducts(catalogRepository),
-    searchProductsByName: new SearchProductsByName(catalogRepository),
-    searchProductsBySku: new SearchProductsBySku(catalogRepository),
+    listProducts: new ListProducts(catalogRepo),
+    searchProductsByName: new SearchProductsByName(catalogRepo),
+    searchProductsBySku: new SearchProductsBySku(catalogRepo),
     listNotifications: new ListNotifications(new HttpNotificationsRepository()),
     markNotificationRead: new MarkNotificationRead(new HttpNotificationsRepository()),
     loginUseCase: new LoginUseCase(new HttpAuthRepository()),
+    listInventory: new ListInventory(inventoryRepo),
+    listInventoryByWarehouse: new ListInventoryByWarehouse(inventoryRepo),
+    searchInventoryByProductName: new SearchInventoryByProductName(inventoryRepo),
+    listWarehouses: new ListWarehouses(inventoryRepo),
   };
 }

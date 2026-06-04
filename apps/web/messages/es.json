@@ -43,6 +43,22 @@
     "error": "No se pudo cargar el catálogo",
     "empty": "No hay productos"
   },
+  "inventory": {
+    "subtitle": "Stock de inventario",
+    "colSku": "SKU",
+    "colProduct": "Producto",
+    "colWarehouse": "Almacén",
+    "colRegion": "Región",
+    "colQuantity": "Cantidad",
+    "filterWarehouse": "Filtrar por almacén",
+    "searchName": "Buscar por nombre de producto",
+    "btnSearch": "Buscar",
+    "clearSearch": "Limpiar búsqueda",
+    "searchResults": "{total} resultados",
+    "paginationTotal": "{total} registros",
+    "error": "No se pudo cargar el inventario",
+    "empty": "Sin registros de stock"
+  },
   "notifications": {
     "subtitle": "Tus notificaciones",
     "colMessage": "Mensaje",

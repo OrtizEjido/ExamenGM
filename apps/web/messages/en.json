@@ -43,6 +43,22 @@
     "error": "Could not load the catalog",
     "empty": "No products"
   },
+  "inventory": {
+    "subtitle": "Inventory stock",
+    "colSku": "SKU",
+    "colProduct": "Product",
+    "colWarehouse": "Warehouse",
+    "colRegion": "Region",
+    "colQuantity": "Quantity",
+    "filterWarehouse": "Filter by warehouse",
+    "searchName": "Search by product name",
+    "btnSearch": "Search",
+    "clearSearch": "Clear search",
+    "searchResults": "{total} results",
+    "paginationTotal": "{total} records",
+    "error": "Could not load inventory",
+    "empty": "No stock records"
+  },
   "notifications": {
     "subtitle": "Your notifications",
     "colMessage": "Message",
