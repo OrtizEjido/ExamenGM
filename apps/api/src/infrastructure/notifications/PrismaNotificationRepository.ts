@@ -1,8 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type {
-  Notification,
-  NotificationStatusCode,
-} from "../../domain/notifications/Notification";
+import type { Notification } from "../../domain/notifications/Notification";
 import type {
   CreateNotificationData,
   NotificationRepository,
@@ -15,19 +12,17 @@ interface NotificationRow {
   userId: number;
   message: string | null;
   kind: string | null;
-  statusCode: string;
+  read: boolean;
   createdAt: Date | null;
 }
 
 function toDomain(row: NotificationRow): Notification {
-  const status: NotificationStatusCode =
-    row.statusCode === "read" ? "read" : "unread";
   return {
     id: row.id,
     userId: row.userId,
     message: row.message,
     kind: row.kind,
-    status,
+    read: row.read,
     createdAt: row.createdAt,
   };
 }
@@ -52,7 +47,7 @@ export class PrismaNotificationRepository implements NotificationRepository {
   async markRead(id: number): Promise<Notification | null> {
     const updated = await this.prisma.notification.updateMany({
       where: { id },
-      data: { statusCode: "read" },
+      data: { read: true },
     });
     if (updated.count === 0) return null;
     const row = await this.prisma.notification.findUnique({ where: { id } });
@@ -65,7 +60,7 @@ export class PrismaNotificationRepository implements NotificationRepository {
         userId: input.userId,
         message: input.message,
         kind: normalizeKind(input.kind),
-        statusCode: "unread",
+        read: false,
         createdAt: new Date(),
       },
     });

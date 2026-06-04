@@ -28,7 +28,7 @@ export function toNotificationDto(n: Notification): NotificationDto {
     userId: n.userId,
     message: n.message,
     kind: n.kind,
-    status: n.status,
+    read: n.read,
     createdAt: n.createdAt ? n.createdAt.toISOString() : null,
   };
 }

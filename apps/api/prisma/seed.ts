@@ -15,12 +15,6 @@ const prisma = new PrismaClient();
 
 const VALID_KINDS = ["info", "warn", "alert", "system", "marketing"];
 
-/** Catálogo canónico de estatus de notificación (con etiqueta en español). */
-const NOTIFICATION_STATUSES = [
-  { code: "unread", labelEs: "No leída" },
-  { code: "read", labelEs: "Leída" },
-];
-
 /** Fechas ISO simples (productos): 'YYYY-MM-DD'. */
 function parseIsoDate(value: unknown): Date | null {
   if (value === null || value === undefined || value === "") return null;
@@ -42,9 +36,9 @@ function parseMixedDate(value: unknown): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/** Unifica el estatus legacy a un code canónico. */
-function mapStatus(legacy: unknown): "unread" | "read" {
-  return String(legacy ?? "").toLowerCase() === "unread" ? "unread" : "read";
+/** Estatus legacy → booleano leído (read/READ/leido = true; unread = false). */
+function isRead(legacy: unknown): boolean {
+  return String(legacy ?? "").toLowerCase() !== "unread";
 }
 
 function normalizeKind(legacy: unknown): string {
@@ -91,10 +85,6 @@ async function main(): Promise<void> {
   legacy.close();
 
   await prisma.notification.deleteMany();
-  await prisma.notificationStatus.deleteMany();
-  for (const s of NOTIFICATION_STATUSES) {
-    await prisma.notificationStatus.create({ data: s });
-  }
 
   for (const r of notifications) {
     await prisma.notification.create({
@@ -103,7 +93,7 @@ async function main(): Promise<void> {
         userId: Number(r.user_id),
         message: r.message === null ? null : String(r.message),
         kind: normalizeKind(r.kind),
-        statusCode: mapStatus(r.status),
+        read: isRead(r.status),
         createdAt: parseMixedDate(r.created_at),
       },
     });
