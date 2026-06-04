@@ -1,6 +1,10 @@
 import { GetDashboardSummary } from "@/application/dashboard/GetDashboardSummary";
 import { InMemoryDashboardRepository } from "@/infrastructure/dashboard/InMemoryDashboardRepository";
-import { ListProducts } from "@/application/catalog/ListProducts";
+import {
+  ListProducts,
+  SearchProductsByName,
+  SearchProductsBySku,
+} from "@/application/catalog/ListProducts";
 import { HttpCatalogRepository } from "@/infrastructure/catalog/HttpCatalogRepository";
 import {
   ListNotifications,
@@ -10,22 +14,23 @@ import { HttpNotificationsRepository } from "@/infrastructure/notifications/Http
 import { LoginUseCase } from "@/application/auth/LoginUseCase";
 import { HttpAuthRepository } from "@/infrastructure/auth/HttpAuthRepository";
 
-/**
- * Composition root (DI). Único lugar que conoce las implementaciones concretas
- * y las cablea con los casos de uso.
- */
 export interface AppServices {
   getDashboardSummary: GetDashboardSummary;
   listProducts: ListProducts;
+  searchProductsByName: SearchProductsByName;
+  searchProductsBySku: SearchProductsBySku;
   listNotifications: ListNotifications;
   markNotificationRead: MarkNotificationRead;
   loginUseCase: LoginUseCase;
 }
 
 export function createContainer(): AppServices {
+  const catalogRepository = new HttpCatalogRepository();
   return {
     getDashboardSummary: new GetDashboardSummary(new InMemoryDashboardRepository()),
-    listProducts: new ListProducts(new HttpCatalogRepository()),
+    listProducts: new ListProducts(catalogRepository),
+    searchProductsByName: new SearchProductsByName(catalogRepository),
+    searchProductsBySku: new SearchProductsBySku(catalogRepository),
     listNotifications: new ListNotifications(new HttpNotificationsRepository()),
     markNotificationRead: new MarkNotificationRead(new HttpNotificationsRepository()),
     loginUseCase: new LoginUseCase(new HttpAuthRepository()),

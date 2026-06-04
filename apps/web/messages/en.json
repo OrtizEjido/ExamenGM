@@ -35,6 +35,11 @@
     "colPrice": "Price",
     "searchName": "Search by name",
     "searchSku": "Search by SKU (number)",
+    "btnSearchName": "Search",
+    "btnSearchSku": "Search",
+    "clearSearch": "Clear search",
+    "searchResults": "{total} results",
+    "paginationTotal": "{total} products",
     "error": "Could not load the catalog",
     "empty": "No products"
   },

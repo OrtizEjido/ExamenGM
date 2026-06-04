@@ -1,10 +1,22 @@
-import type { Product } from "@/domain/catalog/Product";
-import type { CatalogRepository } from "./CatalogRepository";
+import type { CatalogRepository, PageParams, ProductPage } from "./CatalogRepository";
 
-/** Caso de uso: listar productos del catálogo. */
 export class ListProducts {
   constructor(private readonly repository: CatalogRepository) {}
-  execute(): Promise<Product[]> {
-    return this.repository.list();
+  execute(params: PageParams): Promise<ProductPage> {
+    return this.repository.listPaginated(params);
+  }
+}
+
+export class SearchProductsByName {
+  constructor(private readonly repository: CatalogRepository) {}
+  execute(query: string, params: PageParams): Promise<ProductPage> {
+    return this.repository.searchByName(query, params);
+  }
+}
+
+export class SearchProductsBySku {
+  constructor(private readonly repository: CatalogRepository) {}
+  execute(query: string, params: PageParams): Promise<ProductPage> {
+    return this.repository.searchBySku(query, params);
   }
 }

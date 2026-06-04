@@ -1,77 +1,127 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useServices } from "@/presentation/di/ServicesProvider";
 import type { Product } from "@/domain/catalog/Product";
+import type { ProductPage } from "@/application/catalog/CatalogRepository";
 
 export type ViewStatus = "loading" | "error" | "ready";
 
-/** MVVM — ViewModel del catálogo: carga, estado y filtros (nombre + SKU). */
+/** Modos de la tabla: lista paginada, búsqueda por nombre o por SKU. */
+export type SearchMode = "list" | "name" | "sku";
+
 export interface CatalogViewModel {
   status: ViewStatus;
-  /** Productos ya filtrados por los buscadores. */
   products: Product[];
+  total: number;
+  page: number;
+  pages: number;
   error: string | null;
   nameQuery: string;
   skuQuery: string;
-  setNameQuery: (value: string) => void;
-  setSkuQuery: (value: string) => void;
-  reload: () => void;
+  searchMode: SearchMode;
+  setNameQuery: (v: string) => void;
+  setSkuQuery: (v: string) => void;
+  /** Botón buscar por nombre → llama al API */
+  searchByName: () => void;
+  /** Botón buscar por SKU → llama al API */
+  searchBySku: () => void;
+  /** Limpiar búsqueda → vuelve a la lista paginada */
+  clearSearch: () => void;
+  /** Cambiar página */
+  setPage: (p: number) => void;
 }
 
-/**
- * Normaliza la búsqueda por SKU: toma los dígitos y los rellena con ceros a la
- * izquierda hasta 5 (p.ej. "14" -> "00014", para encontrar "SKU-00014").
- */
-function normalizeSkuQuery(input: string): string {
-  const digits = input.replace(/\D/g, "");
-  if (digits === "") return input.trim();
-  return digits.length >= 5 ? digits : digits.padStart(5, "0");
-}
+const LIMIT = 20;
 
 export function useCatalogViewModel(): CatalogViewModel {
-  const { listProducts } = useServices();
-  const [status, setStatus] = useState<ViewStatus>("loading");
-  const [all, setAll] = useState<Product[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { listProducts, searchProductsByName, searchProductsBySku } = useServices();
+
+  const [status, setStatus]       = useState<ViewStatus>("loading");
+  const [page, setPageState]      = useState(1);
+  const [data, setData]           = useState<ProductPage>({ items: [], total: 0, page: 1, limit: LIMIT, pages: 0 });
+  const [error, setError]         = useState<string | null>(null);
   const [nameQuery, setNameQuery] = useState("");
-  const [skuQuery, setSkuQuery] = useState("");
+  const [skuQuery, setSkuQuery]   = useState("");
+  const [mode, setMode]           = useState<SearchMode>("list");
+  // El query "commiteado" (el que realmente se envió al API, no el del input en vivo)
+  const [committedName, setCommittedName] = useState("");
+  const [committedSku, setCommittedSku]   = useState("");
 
-  const load = useCallback(async () => {
-    setStatus("loading");
-    setError(null);
-    try {
-      const data = await listProducts.execute();
-      setAll(data);
-      setStatus("ready");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : null);
-      setStatus("error");
-    }
-  }, [listProducts]);
+  const fetchPage = useCallback(
+    async (fetchMode: SearchMode, name: string, sku: string, p: number) => {
+      setStatus("loading");
+      setError(null);
+      try {
+        let result: ProductPage;
+        const params = { page: p, limit: LIMIT };
+        if (fetchMode === "name") result = await searchProductsByName.execute(name, params);
+        else if (fetchMode === "sku") result = await searchProductsBySku.execute(sku, params);
+        else result = await listProducts.execute(params);
+        setData(result);
+        setStatus("ready");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : null);
+        setStatus("error");
+      }
+    },
+    [listProducts, searchProductsByName, searchProductsBySku],
+  );
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  // Carga inicial
+  useEffect(() => { void fetchPage("list", "", "", 1); }, [fetchPage]);
 
-  const products = useMemo(() => {
-    const name = nameQuery.trim().toLowerCase();
-    const sku = skuQuery.trim() ? normalizeSkuQuery(skuQuery).toLowerCase() : "";
-    return all.filter((p) => {
-      const okName = name === "" || (p.name ?? "").toLowerCase().includes(name);
-      const okSku = sku === "" || (p.sku ?? "").toLowerCase().includes(sku);
-      return okName && okSku;
-    });
-  }, [all, nameQuery, skuQuery]);
+  const searchByName = useCallback(() => {
+    const q = nameQuery.trim();
+    setCommittedName(q);
+    setCommittedSku("");
+    setMode("name");
+    setPageState(1);
+    void fetchPage("name", q, "", 1);
+  }, [nameQuery, fetchPage]);
+
+  const searchBySku = useCallback(() => {
+    const q = skuQuery.trim();
+    setCommittedSku(q);
+    setCommittedName("");
+    setMode("sku");
+    setPageState(1);
+    void fetchPage("sku", "", q, 1);
+  }, [skuQuery, fetchPage]);
+
+  const clearSearch = useCallback(() => {
+    setNameQuery("");
+    setSkuQuery("");
+    setCommittedName("");
+    setCommittedSku("");
+    setMode("list");
+    setPageState(1);
+    void fetchPage("list", "", "", 1);
+  }, [fetchPage]);
+
+  const setPage = useCallback(
+    (p: number) => {
+      setPageState(p);
+      void fetchPage(mode, committedName, committedSku, p);
+    },
+    [mode, committedName, committedSku, fetchPage],
+  );
 
   return {
     status,
-    products,
+    products: data.items,
+    total: data.total,
+    page: data.page,
+    pages: data.pages,
     error,
     nameQuery,
     skuQuery,
+    searchMode: mode,
     setNameQuery,
     setSkuQuery,
-    reload: () => void load(),
+    searchByName,
+    searchBySku,
+    clearSearch,
+    setPage,
   };
 }
