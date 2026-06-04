@@ -83,6 +83,38 @@ async function main(): Promise<void> {
     });
   }
 
+  // ── Almacenes ─────────────────────────────────────────────────────────────
+  const legacyWarehouses = legacy
+    .prepare("SELECT id, name, region FROM warehouses")
+    .all() as Array<Record<string, unknown>>;
+
+  await prisma.inventoryStock.deleteMany();
+  await prisma.warehouse.deleteMany();
+  for (const w of legacyWarehouses) {
+    await prisma.warehouse.create({
+      data: {
+        id: Number(w.id),
+        name: String(w.name),
+        region: w.region == null ? null : String(w.region),
+      },
+    });
+  }
+
+  // ── Stock de inventario (PK compuesta: productId + warehouseId) ───────────
+  const legacyStock = legacy
+    .prepare("SELECT product_id, warehouse_id, quantity FROM inventory_stock")
+    .all() as Array<Record<string, unknown>>;
+
+  for (const s of legacyStock) {
+    await prisma.inventoryStock.create({
+      data: {
+        productId: Number(s.product_id),
+        warehouseId: Number(s.warehouse_id),
+        quantity: Number(s.quantity),
+      },
+    });
+  }
+
   // ── Tipos de notificación (catálogo) ──────────────────────────────────────
   await prisma.notification.deleteMany();
   await prisma.notificationKind.deleteMany();
@@ -109,7 +141,8 @@ async function main(): Promise<void> {
 
   console.log(
     `Seeded: ${ROLES.length} roles, ${legacyUsers.length} users, ` +
-    `${products.length} products, ${NOTIFICATION_KINDS.length} notification kinds, ` +
+    `${products.length} products, ${legacyWarehouses.length} warehouses, ` +
+    `${legacyStock.length} stock rows, ${NOTIFICATION_KINDS.length} notification kinds, ` +
     `${notifications.length} notifications`,
   );
 }
