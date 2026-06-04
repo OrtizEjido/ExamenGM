@@ -21,7 +21,8 @@ Se solicitó:
    ni normalizar las inconsistencias de datos (eso vendrá en una fase posterior).
 
 ### Qué exploré
-<!-- Por completar -->
+Queria comprobar que la IA entendiera bien el contexto del ejercicio y del proyecto a migrar.
+Automatizacion del Journal dejando apartados que pueda rellenar la IA y otros que pueda rellenar yo, ademas de iniciar el proyecto.
 
 ### Hallazgos relevantes sobre el legacy (resumen)
 - **Stack legacy:** Flask 1.0.4 + JS vanilla + SQLite, SQL crudo (sin ORM), conexión global
@@ -42,7 +43,8 @@ Se solicitó:
   (la verdad está en `sale_items`).
 
 ### Decisiones tomadas y razones
-Primero quiero un tipado que funcione para comenzar aunque aun no este perfecto, ya cuando vaya modulo por modulo corregire a detalle
+Primero quiero un tipado que funcione para comenzar aunque aun no este perfecto, ya cuando vaya modulo por modulo corregire a detalle.
+Tambien decidi que el Journal podria ser un mix entre cosas mias y cosas de la IA como indica el resumen del prompt.
 
 ### Qué implementé (resumen)
 - Esqueleto del monorepo Turborepo: `package.json` (workspaces), `turbo.json`,
@@ -64,10 +66,10 @@ ventanas de advertencia, botones de guardado y la navegación como **sidebar**. 
 **Next.js** para las rutas y aplicar **Ant Design** a todo lo visual.
 
 ### Qué exploré
-<!-- Por completar -->
+El reconocimiento de componentes visuales repetitivos para evitar definirlos desde 0 siempre, creando asi mis "bloques" de construccion para la UI.
 
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Aunque un proyecto empresarial no tiene como prioridad la estetica, decidi mejorar la del proyecto inicial utilizando un diseño comun en ERPs modernos como lo es Ant Desing
 
 ### Qué implementé (resumen)
 - Paquete compartido **`@erp/ui`** (Ant Design v5) con:
@@ -100,10 +102,9 @@ código existente a estos principios **antes de continuar**. Además, crear una 
 journal y opinar si conviene una skill para las entradas del journal.
 
 ### Qué exploré
-<!-- Por completar -->
-
+Ir aplicanda arquitectura y buenas practicas a lo ya tipado y a los componentes visuales creados
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Aqui se puede consultar el ADR correspondiente
 
 ### Qué implementé (resumen)
 - Reestructuré `apps/web/src` en capas con **regla de dependencia hacia adentro**:
@@ -136,10 +137,10 @@ la **vista de inicio** (login) sin lógica que, al hacer clic, avance a la panta
 donde se ve el sidebar.
 
 ### Qué exploré
-<!-- Por completar -->
+Automatizar parte de la documentacion para 
 
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Evitar la tarea repetitiva de pedir constantemente la creacion de nuevas entradas en Journal
 
 ### Qué implementé (resumen)
 - Skill `erp-journal` en `.claude/skills/erp-journal/SKILL.md` (registrada e invocable):
@@ -168,10 +169,9 @@ se complete en el examen): mover todos los textos de los componentes visuales a 
 recomendar librería/herramienta de multi-idioma. Crear entrada de journal.
 
 ### Qué exploré
-<!-- Por completar -->
-
+Mejorar el sistema para clientes de habla no española
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Decision a futuro para facilitar la implementacion de multiples idiomas no solo el ingles
 
 ### Qué implementé (resumen)
 - **Librería elegida: `next-intl`** (modo sin routing de locale), por integración nativa con
@@ -202,10 +202,10 @@ Implementar tema **claro y oscuro** en los componentes visuales actuales (y a fu
 módulos), y recomendar si hace falta una librería.
 
 ### Qué exploré
-<!-- Por completar -->
+Cambios visuales e implementacion de distintos temas, explorar si una libreria puede ser conveniente
 
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Agregar un cambio rapido para la preferencia del usuario
 
 ### Qué implementé (resumen)
 - **Sin librería para el estilo**: Ant Design v5 cambia la paleta con
@@ -240,11 +240,10 @@ ambos temas**; iniciar git, crear el repo remoto donde se subirá, y **segmentar
 (primero los modelos, luego lo visual).
 
 ### Qué exploré
-<!-- Por completar -->
+Note un problema al arrancar la app cada ocasion y explore una solucion
 
 ### Decisiones tomadas y razones
-<!-- Por completar -->
-
+Ya teniendo algunos elementos me parecia correcto iniciar el repositorio y subirlo
 ### Qué implementé (resumen)
 - `Sidebar` fijado en oscuro en ambos temas (`theme="dark"` en `AppFrame`); el `ThemeToggle`
   sigue cambiando el resto de la UI (header, contenido, cards, login).
@@ -274,10 +273,9 @@ el frontend y correrlo para probar el módulo. Considerar **tablas nuevas de est
 unificar variantes (aprobado/rechazado/…) y preparación i18n (por ahora solo español).
 
 ### Qué exploré
-<!-- Por completar -->
-
+Automatizacion de la tarea repetitiva migracion de modulo
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Crear una Skill para la IA con una serie de instrucciones a seguir para la migracion de cada modulo por separado
 
 ### Qué implementé (resumen)
 - Skill **`erp-module-migrator`** (`.claude/skills/erp-module-migrator/SKILL.md`, registrada)
@@ -305,10 +303,9 @@ Ejecutar el flujo de la skill `erp-module-migrator` sobre el primer módulo: **C
 frontend y correrlo para probar.
 
 ### Qué exploré
-<!-- Por completar -->
-
+Ejecucion de la skill creada previamente
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Se comenzo con el modulo Catalogo al ser de los mas aislados y pequeños para ver el funcionamiento de la skill.
 
 ### Qué implementé (resumen)
 - **`@erp/types`**: contrato normalizado `Product` + `CreateProductInput` (camelCase, fechas ISO).
@@ -341,10 +338,10 @@ la tabla; "Productos del catálogo" más grande y en negrita; falta buscador; pa
 un segundo buscador por número de SKU que rellena con ceros a 5 dígitos (p.ej. 14 → 00014).
 
 ### Qué exploré
-<!-- Por completar -->
+Mejorar lo ya realizado en el modulo para ir afinando detalles
 
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Agregar un buscador por SKU puede agilizar las busquedas en el catalogo dependiendo el contexto del usuario
 
 ### Qué implementé (resumen)
 - Subtítulo "Productos del catálogo" como `Typography.Title` (más grande y en negrita).
@@ -371,10 +368,9 @@ módulo que ejercita la **unificación de estatus** mediante tabla catálogo (va
 `read/READ/leido/unread`), con etiqueta resuelta por idioma en el frontend (hoy solo español).
 
 ### Qué exploré
-<!-- Por completar -->
-
+Utilizar la skill en un modulo pequeño de nuevo
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Se continuo con la migracion modulo x modulo
 
 ### Qué implementé (resumen)
 - **`@erp/types`**: contrato normalizado `Notification` + `NotificationStatusCode`
@@ -413,10 +409,9 @@ Dado que el estatus de notificación es binario (leído/no leído), modelarlo co
 "No leída"/"Leída", y la etiqueta también debe cambiar cuando la app esté en inglés.
 
 ### Qué exploré
-<!-- Por completar -->
-
+Realziar cambios pequeños para optimizacion y normalizacion
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+cambio en campos de las tablas/modelos para optimizacion
 
 ### Qué implementé (resumen)
 - Reemplacé la tabla catálogo `notification_statuses` (y la FK `status_code`) por un campo
