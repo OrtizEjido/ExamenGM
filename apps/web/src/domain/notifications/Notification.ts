@@ -1,11 +1,9 @@
-/** DOMINIO (frontend) — Notificación. Estatus unificado (code canónico). */
-export type NotificationStatusCode = "unread" | "read";
-
+/** DOMINIO (frontend) — Notificación. Estatus leído/no leído como booleano. */
 export interface Notification {
   id: number;
   userId: number;
   message: string | null;
   kind: string | null;
-  status: NotificationStatusCode;
+  read: boolean;
   createdAt: string | null;
 }

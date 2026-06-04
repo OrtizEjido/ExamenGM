@@ -9,7 +9,7 @@ function toDomain(d: NotificationDto): Notification {
     userId: d.userId,
     message: d.message,
     kind: d.kind,
-    status: d.status,
+    read: d.read,
     createdAt: d.createdAt,
   };
 }

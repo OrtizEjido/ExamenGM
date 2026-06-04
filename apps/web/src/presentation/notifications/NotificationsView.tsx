@@ -3,10 +3,7 @@
 import { Alert, App, Button, Card, Empty, Space, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useLocale, useTranslations } from "next-intl";
-import type {
-  Notification,
-  NotificationStatusCode,
-} from "@/domain/notifications/Notification";
+import type { Notification } from "@/domain/notifications/Notification";
 import { useNotificationsViewModel } from "./useNotificationsViewModel";
 
 const KIND_COLOR: Record<string, string> = {
@@ -42,10 +39,6 @@ export function NotificationsView() {
     );
   }
 
-  const statusLabel: Record<NotificationStatusCode, string> = {
-    unread: t("status.unread"),
-    read: t("status.read"),
-  };
   const kindLabel: Record<string, string> = {
     info: t("kind.info"),
     warn: t("kind.warn"),
@@ -81,12 +74,12 @@ export function NotificationsView() {
     },
     {
       title: t("colStatus"),
-      dataIndex: "status",
-      key: "status",
+      dataIndex: "read",
+      key: "read",
       width: 130,
-      render: (value: NotificationStatusCode) => (
-        <Tag color={value === "unread" ? "processing" : "default"}>
-          {statusLabel[value]}
+      render: (read: boolean) => (
+        <Tag color={read ? "default" : "processing"}>
+          {read ? t("status.read") : t("status.unread")}
         </Tag>
       ),
     },
@@ -103,7 +96,7 @@ export function NotificationsView() {
       key: "actions",
       width: 180,
       render: (_, record) =>
-        record.status === "unread" ? (
+        !record.read ? (
           <Button
             size="small"
             loading={markingIds.includes(record.id)}

@@ -51,7 +51,7 @@ export function useNotificationsViewModel(): NotificationsViewModel {
       try {
         const updated = await markNotificationRead.execute(id);
         setNotifications((list) =>
-          list.map((n) => (n.id === id ? { ...n, status: updated.status } : n)),
+          list.map((n) => (n.id === id ? { ...n, read: updated.read } : n)),
         );
       } finally {
         setMarkingIds((ids) => ids.filter((x) => x !== id));
