@@ -41,7 +41,6 @@ export function CatalogView() {
   const columns: ColumnsType<Product> = [
     { title: t("colSku"), dataIndex: "sku", key: "sku", width: 140 },
     { title: t("colName"), dataIndex: "name", key: "name" },
-    { title: t("colCategory"), dataIndex: "category", key: "category", width: 160 },
     {
       title: t("colPrice"),
       dataIndex: "price",
@@ -50,6 +49,7 @@ export function CatalogView() {
       align: "right",
       render: (value: number | null) => (value == null ? "—" : value.toFixed(2)),
     },
+    { title: t("colCategory"), dataIndex: "category", key: "category", width: 160 },
   ];
 
   return (
