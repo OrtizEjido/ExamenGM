@@ -20,10 +20,18 @@ import { encryptPassword } from "../src/infrastructure/crypto/passwordCipher";
 const here = dirname(fileURLToPath(import.meta.url));
 const prisma = new PrismaClient();
 
-/** Catálogo de roles — normaliza el campo `is_admin` (0/1) del legacy. */
 const ROLES = [
-  { id: 1, code: "admin", labelEs: "Administrador" },
+  { id: 1, code: "admin",  labelEs: "Administrador" },
   { id: 2, code: "normal", labelEs: "Usuario" },
+];
+
+/** Tabla catálogo de tipos de notificación. */
+const NOTIFICATION_KINDS = [
+  { id: 1, code: "info",      labelEs: "Información" },
+  { id: 2, code: "warn",      labelEs: "Advertencia" },
+  { id: 3, code: "alert",     labelEs: "Alerta" },
+  { id: 4, code: "system",    labelEs: "Sistema" },
+  { id: 5, code: "marketing", labelEs: "Marketing" },
 ];
 
 async function main(): Promise<void> {
@@ -31,14 +39,12 @@ async function main(): Promise<void> {
   const legacy = new DatabaseSync(":memory:");
   legacy.exec(sql);
 
-  // ── Roles (tabla catálogo) ────────────────────────────────────────────────
+  // ── Roles ─────────────────────────────────────────────────────────────────
   await prisma.user.deleteMany();
   await prisma.role.deleteMany();
-  for (const r of ROLES) {
-    await prisma.role.create({ data: r });
-  }
+  for (const r of ROLES) await prisma.role.create({ data: r });
 
-  // ── Usuarios con contraseñas cifradas ────────────────────────────────────
+  // ── Usuarios con contraseñas cifradas ─────────────────────────────────────
   const legacyUsers = legacy
     .prepare("SELECT id, username, password, is_admin FROM users")
     .all() as Array<Record<string, unknown>>;
@@ -49,16 +55,14 @@ async function main(): Promise<void> {
         id: Number(u.id),
         username: String(u.username),
         encryptedPassword: encryptPassword(String(u.password)),
-        roleId: Number(u.is_admin) === 1 ? 1 : 2, // 1=admin, 2=normal
+        roleId: Number(u.is_admin) === 1 ? 1 : 2,
       },
     });
   }
 
-  // ── Catálogo: productos ───────────────────────────────────────────────────
+  // ── Productos ─────────────────────────────────────────────────────────────
   const products = legacy
-    .prepare(
-      "SELECT id, sku, name, description, price, category, supplier_id, created_at, updated_at, deleted_at FROM products",
-    )
+    .prepare("SELECT id, sku, name, description, price, category, supplier_id, created_at, updated_at, deleted_at FROM products")
     .all() as Array<Record<string, unknown>>;
 
   await prisma.product.deleteMany();
@@ -79,22 +83,24 @@ async function main(): Promise<void> {
     });
   }
 
+  // ── Tipos de notificación (catálogo) ──────────────────────────────────────
+  await prisma.notification.deleteMany();
+  await prisma.notificationKind.deleteMany();
+  for (const k of NOTIFICATION_KINDS) await prisma.notificationKind.create({ data: k });
+
   // ── Notificaciones ────────────────────────────────────────────────────────
   const notifications = legacy
-    .prepare(
-      "SELECT id, user_id, message, kind, status, created_at FROM notifications",
-    )
+    .prepare("SELECT id, user_id, message, kind, status, created_at FROM notifications")
     .all() as Array<Record<string, unknown>>;
   legacy.close();
 
-  await prisma.notification.deleteMany();
   for (const r of notifications) {
+    const code = normalizeKind(r.kind);
     await prisma.notification.create({
       data: {
-        id: Number(r.id),
         userId: Number(r.user_id),
         message: r.message === null ? null : String(r.message),
-        kind: normalizeKind(r.kind),
+        kind: { connect: { code } },   // FK por código canónico
         read: isRead(r.status),
         createdAt: parseMixedDate(r.created_at),
       },
@@ -103,13 +109,11 @@ async function main(): Promise<void> {
 
   console.log(
     `Seeded: ${ROLES.length} roles, ${legacyUsers.length} users, ` +
-      `${products.length} products, ${notifications.length} notifications`,
+    `${products.length} products, ${NOTIFICATION_KINDS.length} notification kinds, ` +
+    `${notifications.length} notifications`,
   );
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exitCode = 1;
-  })
+  .catch((e) => { console.error(e); process.exitCode = 1; })
   .finally(() => prisma.$disconnect());

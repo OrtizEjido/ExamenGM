@@ -5,25 +5,32 @@ import type {
   NotificationRepository,
 } from "../../application/notifications/NotificationRepository";
 
-const VALID_KINDS = ["info", "warn", "alert", "system", "marketing"];
+/** Tipo Prisma con el join de notificationKind incluido. */
+type NotificationRow = Prisma.NotificationGetPayload<{
+  include: { kind: true };
+}>;
 
-/** Tipo inferido por Prisma para una fila de `notifications`. */
-type NotificationRow = Prisma.NotificationGetPayload<Record<string, never>>;
-
+/**
+ * Mapea la fila Prisma (con join) al modelo de dominio.
+ * El dominio sigue exponiendo `kind` como código string — el FK es un
+ * detalle de infraestructura invisible fuera del repositorio.
+ */
 function toDomain(row: NotificationRow): Notification {
   return {
     id: row.id,
     userId: row.userId,
     message: row.message,
-    kind: row.kind,
+    kind: row.kind?.code ?? null,   // código canónico, no el id
     read: row.read,
     createdAt: row.createdAt,
   };
 }
 
-function normalizeKind(kind: string | undefined): string {
-  const k = (kind ?? "").toLowerCase();
-  return VALID_KINDS.includes(k) ? k : "info";
+const VALID_KIND_CODES = ["info", "warn", "alert", "system", "marketing"];
+
+function normalizeKindCode(code: string | undefined): string {
+  const k = (code ?? "").toLowerCase();
+  return VALID_KIND_CODES.includes(k) ? k : "info";
 }
 
 /** INFRAESTRUCTURA — Adapter Prisma del puerto NotificationRepository. */
@@ -33,6 +40,7 @@ export class PrismaNotificationRepository implements NotificationRepository {
   async listForUser(userId: number): Promise<Notification[]> {
     const rows = await this.prisma.notification.findMany({
       where: { userId },
+      include: { kind: true },
       orderBy: { id: "desc" },
     });
     return rows.map(toDomain);
@@ -44,19 +52,24 @@ export class PrismaNotificationRepository implements NotificationRepository {
       data: { read: true },
     });
     if (updated.count === 0) return null;
-    const row = await this.prisma.notification.findUnique({ where: { id } });
+    const row = await this.prisma.notification.findUnique({
+      where: { id },
+      include: { kind: true },
+    });
     return row ? toDomain(row) : null;
   }
 
   async create(input: CreateNotificationData): Promise<Notification> {
+    const code = normalizeKindCode(input.kind);
     const row = await this.prisma.notification.create({
       data: {
         userId: input.userId,
         message: input.message,
-        kind: normalizeKind(input.kind),
+        kind: { connect: { code } },
         read: false,
         createdAt: new Date(),
       },
+      include: { kind: true },
     });
     return toDomain(row);
   }
