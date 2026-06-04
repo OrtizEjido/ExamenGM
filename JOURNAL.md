@@ -42,7 +42,7 @@ Se solicitó:
   (la verdad está en `sale_items`).
 
 ### Decisiones tomadas y razones
-<!-- Por completar -->
+Primero quiero un tipado que funcione para comenzar aunque aun no este perfecto, ya cuando vaya modulo por modulo corregire a detalle
 
 ### Qué implementé (resumen)
 - Esqueleto del monorepo Turborepo: `package.json` (workspaces), `turbo.json`,
@@ -363,6 +363,48 @@ un segundo buscador por número de SKU que rellena con ceros a 5 dígitos (p.ej.
 
 ---
 
+## Entrada 11 — 2026-06-03 17:52 (PDT) — Migración del módulo Notificaciones (estatus unificado por catálogo)
+
+### Resumen del prompt
+Avanzar con el módulo de **Notificaciones** usando la skill `erp-module-migrator`. Es el primer
+módulo que ejercita la **unificación de estatus** mediante tabla catálogo (variantes legacy
+`read/READ/leido/unread`), con etiqueta resuelta por idioma en el frontend (hoy solo español).
+
+### Qué exploré
+<!-- Por completar -->
+
+### Decisiones tomadas y razones
+<!-- Por completar -->
+
+### Qué implementé (resumen)
+- **`@erp/types`**: contrato normalizado `Notification` + `NotificationStatusCode`
+  (`'unread' | 'read'`) + `CreateNotificationInput`.
+- **`apps/api`**: tabla catálogo **`notification_statuses`** (Prisma; `code` canónico +
+  `label_es`) y modelo `Notification` con FK al estatus. Capas domain/application/
+  infrastructure/interface + DI. Endpoints: `GET /notifications/:userId`,
+  `POST /notifications/:id/read`, `POST /notifications`, `DELETE /notifications/:id`.
+  ETL ampliado: unifica el estatus (`read/READ/leido → read`; `unread → unread`) y parsea
+  los **3 formatos de fecha** mezclados (ISO, `DD/MM/YYYY`, epoch unix).
+- **`apps/web`**: slice Notificaciones (Clean Architecture + MVVM) — adapter HTTP
+  (`apiGet`/`apiPost`), casos de uso `ListNotifications`/`MarkNotificationRead`,
+  `useNotificationsViewModel` (con acción de marcar leída + estado por fila) y
+  `NotificationsView` (tabla antd con Tags de tipo/estatus, botón "Marcar como leída",
+  toast). i18n es/en para columnas, estatus y tipos.
+
+### Hallazgos / notas
+- Entrada registrada con la skill `erp-journal`.
+- **Backend verificado con curl**: lista del user 2 = 9 ítems con estatus reducido a
+  `['read','unread']` y fechas ISO válidas; mark-read 200; 404 inexistente; validación 400.
+- **Frontend verificado en navegador** (Claude Preview, inspección del DOM): ruta
+  `/notifications` con 9 filas, tags localizados (Leída/No leída + tipos en español), fechas
+  formateadas, 3 botones de "Marcar como leída"; al hacer click: botones 3→2, "No leída" 3→2 y
+  toast de éxito (POST → BD → re-render). `tsc` verde en api y web.
+- Sin sesión real aún: el FE usa `DEMO_USER_ID = 2` como "usuario actual".
+- La etiqueta del estatus se resuelve por idioma en el FE (i18n); la tabla catálogo guarda
+  `label_es` como fuente canónica para consumidores no-UI/reportes.
+
+---
+
 ## Historial de prompts
 
 1. **Prompt 1** — Contexto del examen: leer y entender las instrucciones del archivo
@@ -394,3 +436,6 @@ un segundo buscador por número de SKU que rellena con ceros a 5 dígitos (p.ej.
     frontend corrido para probar.
 12. **Prompt 12** — Mejoras de UI en Catálogo: contraste del header, subtítulo más grande y en
     negrita, buscador por nombre y por SKU (con padding a 5 dígitos), y paginado a 20.
+13. **Prompt 13** — Avanzar con el módulo de **Notificaciones** (primer uso de la tabla
+    catálogo de estatus para unificar `read/READ/leido/unread`); backend verificado con curl
+    y frontend probado en navegador.
