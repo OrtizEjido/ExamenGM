@@ -73,6 +73,34 @@ model Product {
   @@map("products")
 }
 
+// ── Devoluciones ───────────────────────────────────────────────────────────
+
+// Tabla catálogo de estatus de devolución.
+// Unifica variantes legacy: Approved/aprobada/done → 'approved'/'done'; pending → 'pending'; rejected → 'rejected'.
+model RefundStatus {
+  code    String   @id  // 'pending' | 'approved' | 'rejected' | 'done'
+  labelEs String   @map("label_es")
+  refunds Refund[]
+
+  @@map("refund_statuses")
+}
+
+// amount: Float (normalizado desde TEXT en el legacy).
+// created_at: DateTime (normalizado desde 4 formatos mezclados del legacy).
+model Refund {
+  id         Int          @id @default(autoincrement())
+  saleId     Int?         @map("sale_id")
+  userId     Int?         @map("user_id")
+  reason     String?
+  amount     Float?
+  statusCode String       @map("status_code")
+  status     RefundStatus @relation(fields: [statusCode], references: [code])
+  approvedBy Int?         @map("approved_by")
+  createdAt  DateTime?    @map("created_at")
+
+  @@map("refunds")
+}
+
 // ── Notificaciones ─────────────────────────────────────────────────────────
 
 // Tabla catálogo de tipos de notificación. Normaliza el campo `kind` (string)

@@ -4,12 +4,14 @@ import type {
   Notification as NotificationDto,
   Product as ProductDto,
   ProductPage,
+  Refund as RefundDto,
   Warehouse as WarehouseDto,
 } from "@erp/types";
 import type { Product } from "../../domain/catalog/Product";
 import type { PageResult } from "../../application/catalog/ProductRepository";
 import type { InventoryItem, Warehouse } from "../../domain/inventory/InventoryItem";
 import type { Notification } from "../../domain/notifications/Notification";
+import type { Refund } from "../../domain/refunds/Refund";
 
 /** Mapea la entidad de dominio al contrato compartido (@erp/types): fechas → ISO. */
 export function toProductDto(p: Product): ProductDto {
@@ -65,6 +67,20 @@ export function toInventoryPageDto(page: PageResult<InventoryItem>): InventoryPa
 /** Mapea un almacén al contrato compartido. */
 export function toWarehouseDto(w: Warehouse): WarehouseDto {
   return { id: w.id, name: w.name, region: w.region };
+}
+
+/** Mapea una devolución al contrato compartido (fecha → ISO, amount numérico). */
+export function toRefundDto(r: Refund): RefundDto {
+  return {
+    id: r.id,
+    saleId: r.saleId,
+    userId: r.userId,
+    reason: r.reason,
+    amount: r.amount,
+    status: r.status,
+    approvedBy: r.approvedBy,
+    createdAt: r.createdAt ? r.createdAt.toISOString() : null,
+  };
 }
 
 /** Mapea la notificación de dominio al contrato compartido (fecha → ISO). */

@@ -35,3 +35,27 @@ export function normalizeKind(legacy: unknown): string {
   const k = String(legacy ?? "").toLowerCase();
   return VALID_KINDS.includes(k) ? k : "info";
 }
+
+/** Monto legacy (TEXT) → número. Retorna null si no es parseable. */
+export function parseAmount(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(String(value).replace(",", "."));
+  return Number.isFinite(n) ? n : null;
+}
+
+const REFUND_STATUS_MAP: Record<string, string> = {
+  approved: "approved",
+  Approved: "approved",
+  aprobada: "approved",
+  done: "done",
+  pending: "pending",
+  Pending: "pending",
+  pendiente: "pending",
+  rejected: "rejected",
+};
+
+/** Unifica variantes legacy de estatus de devolución → code canónico. */
+export function normalizeRefundStatus(legacy: unknown): string {
+  const s = String(legacy ?? "").trim();
+  return REFUND_STATUS_MAP[s] ?? "pending";
+}

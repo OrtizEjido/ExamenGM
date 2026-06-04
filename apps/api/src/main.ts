@@ -8,6 +8,7 @@ import { createCatalogRouter } from "./interface/http/catalogRoutes";
 import { createNotificationRouter } from "./interface/http/notificationRoutes";
 import { createAuthRouter } from "./interface/http/authRoutes";
 import { createInventoryRouter } from "./interface/http/inventoryRoutes";
+import { createRefundRouter } from "./interface/http/refundRoutes";
 
 const PORT = Number(process.env.PORT ?? 4000);
 
@@ -21,6 +22,7 @@ app.use("/api/auth", createAuthRouter(services));
 app.use("/api/products", createCatalogRouter(services));
 app.use("/api/notifications", createNotificationRouter(services));
 app.use("/api/inventory", createInventoryRouter(services));
+app.use("/api/refunds", createRefundRouter(services));
 
 // Middleware de error final.
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

@@ -9,6 +9,8 @@ import {
   parseMixedDate,
   isRead,
   normalizeKind,
+  parseAmount,
+  normalizeRefundStatus,
 } from "./etl-helpers";
 import { encryptPassword } from "../src/infrastructure/crypto/passwordCipher";
 
@@ -60,11 +62,12 @@ async function main(): Promise<void> {
     });
   }
 
-  // ── Productos ─────────────────────────────────────────────────────────────
+  // ── Productos (borrar stock antes por FK) ────────────────────────────────
   const products = legacy
     .prepare("SELECT id, sku, name, description, price, category, supplier_id, created_at, updated_at, deleted_at FROM products")
     .all() as Array<Record<string, unknown>>;
 
+  await prisma.inventoryStock.deleteMany();
   await prisma.product.deleteMany();
   for (const r of products) {
     await prisma.product.create({
@@ -88,7 +91,6 @@ async function main(): Promise<void> {
     .prepare("SELECT id, name, region FROM warehouses")
     .all() as Array<Record<string, unknown>>;
 
-  await prisma.inventoryStock.deleteMany();
   await prisma.warehouse.deleteMany();
   for (const w of legacyWarehouses) {
     await prisma.warehouse.create({
@@ -111,6 +113,36 @@ async function main(): Promise<void> {
         productId: Number(s.product_id),
         warehouseId: Number(s.warehouse_id),
         quantity: Number(s.quantity),
+      },
+    });
+  }
+
+  // ── Estatus de devoluciones (catálogo) ────────────────────────────────────
+  const REFUND_STATUSES = [
+    { code: "pending",  labelEs: "Pendiente" },
+    { code: "approved", labelEs: "Aprobada" },
+    { code: "rejected", labelEs: "Rechazada" },
+    { code: "done",     labelEs: "Completada" },
+  ];
+
+  const legacyRefunds = legacy
+    .prepare("SELECT id, sale_id, user_id, reason, amount, status, approved_by, created_at FROM refunds")
+    .all() as Array<Record<string, unknown>>;
+
+  await prisma.refund.deleteMany();
+  await prisma.refundStatus.deleteMany();
+  for (const s of REFUND_STATUSES) await prisma.refundStatus.create({ data: s });
+
+  for (const r of legacyRefunds) {
+    await prisma.refund.create({
+      data: {
+        saleId: r.sale_id == null ? null : Number(r.sale_id),
+        userId: r.user_id == null ? null : Number(r.user_id),
+        reason: r.reason == null ? null : String(r.reason),
+        amount: parseAmount(r.amount),
+        status: { connect: { code: normalizeRefundStatus(r.status) } },
+        approvedBy: r.approved_by == null ? null : Number(r.approved_by),
+        createdAt: parseMixedDate(r.created_at),
       },
     });
   }
@@ -142,7 +174,8 @@ async function main(): Promise<void> {
   console.log(
     `Seeded: ${ROLES.length} roles, ${legacyUsers.length} users, ` +
     `${products.length} products, ${legacyWarehouses.length} warehouses, ` +
-    `${legacyStock.length} stock rows, ${NOTIFICATION_KINDS.length} notification kinds, ` +
+    `${legacyStock.length} stock rows, ${REFUND_STATUSES.length} refund statuses, ` +
+    `${legacyRefunds.length} refunds, ${NOTIFICATION_KINDS.length} notification kinds, ` +
     `${notifications.length} notifications`,
   );
 }
