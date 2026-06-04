@@ -2,15 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useServices } from "@/presentation/di/ServicesProvider";
+import { useSession } from "@/presentation/auth/useSession";
 import type { Notification } from "@/domain/notifications/Notification";
 
 export type ViewStatus = "loading" | "error" | "ready";
-
-/**
- * Usuario "actual" del demo. La sesión real (login) aún no propaga un userId,
- * así que se fija el usuario con más notificaciones para ilustrar el módulo.
- */
-export const DEMO_USER_ID = 2;
 
 export interface NotificationsViewModel {
   status: ViewStatus;
@@ -23,23 +18,26 @@ export interface NotificationsViewModel {
 
 export function useNotificationsViewModel(): NotificationsViewModel {
   const { listNotifications, markNotificationRead } = useServices();
+  const session = useSession();
   const [status, setStatus] = useState<ViewStatus>("loading");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [markingIds, setMarkingIds] = useState<number[]>([]);
 
   const load = useCallback(async () => {
+    // Hasta que la sesión se hidrate desde localStorage no hacemos la petición.
+    if (!session) return;
     setStatus("loading");
     setError(null);
     try {
-      const data = await listNotifications.execute(DEMO_USER_ID);
+      const data = await listNotifications.execute(session.user.id);
       setNotifications(data);
       setStatus("ready");
     } catch (e) {
       setError(e instanceof Error ? e.message : null);
       setStatus("error");
     }
-  }, [listNotifications]);
+  }, [listNotifications, session]);
 
   useEffect(() => {
     void load();
