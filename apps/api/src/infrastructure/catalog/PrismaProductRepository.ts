@@ -1,22 +1,13 @@
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 import type { Product } from "../../domain/catalog/Product";
 import type {
   CreateProductData,
+  PageParams,
+  PageResult,
   ProductRepository,
 } from "../../application/catalog/ProductRepository";
 
-interface ProductRow {
-  id: number;
-  sku: string | null;
-  name: string | null;
-  description: string | null;
-  price: number | null;
-  category: string | null;
-  supplierId: number | null;
-  createdAt: Date | null;
-  updatedAt: Date | null;
-  deletedAt: Date | null;
-}
+type ProductRow = Prisma.ProductGetPayload<Record<string, never>>;
 
 function toDomain(row: ProductRow): Product {
   return {
@@ -33,31 +24,69 @@ function toDomain(row: ProductRow): Product {
   };
 }
 
+function toPageResult(
+  items: Product[],
+  total: number,
+  { page, limit }: PageParams,
+): PageResult<Product> {
+  return { items, total, page, limit, pages: Math.ceil(total / limit) };
+}
+
+/**
+ * Normaliza la búsqueda por SKU: extrae los dígitos y los rellena con ceros a
+ * la izquierda hasta 5 (p.ej. "14" → "00014"). Si no hay dígitos, usa el
+ * string tal cual.
+ */
+function normalizeSkuQuery(input: string): string {
+  const digits = input.replace(/\D/g, "");
+  if (!digits) return input;
+  return digits.length >= 5 ? digits : digits.padStart(5, "0");
+}
+
 /** INFRAESTRUCTURA — Adapter Prisma del puerto ProductRepository. */
 export class PrismaProductRepository implements ProductRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async listActive(): Promise<Product[]> {
-    const rows = await this.prisma.product.findMany({
-      where: { deletedAt: null },
-      orderBy: { id: "asc" },
-    });
-    return rows.map(toDomain);
+  async listPaginated({ page, limit }: PageParams): Promise<PageResult<Product>> {
+    const skip = (page - 1) * limit;
+    const where: Prisma.ProductWhereInput = { deletedAt: null };
+    const [rows, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({ where, skip, take: limit, orderBy: { id: "asc" } }),
+      this.prisma.product.count({ where }),
+    ]);
+    return toPageResult(rows.map(toDomain), total, { page, limit });
   }
 
   async findById(id: number): Promise<Product | null> {
-    const row = await this.prisma.product.findFirst({
-      where: { id, deletedAt: null },
-    });
+    const row = await this.prisma.product.findFirst({ where: { id, deletedAt: null } });
     return row ? toDomain(row) : null;
   }
 
-  async search(query: string): Promise<Product[]> {
-    const rows = await this.prisma.product.findMany({
-      where: { deletedAt: null, name: { contains: query } },
-      orderBy: { id: "asc" },
-    });
-    return rows.map(toDomain);
+  async searchByName(query: string, { page, limit }: PageParams): Promise<PageResult<Product>> {
+    const skip = (page - 1) * limit;
+    const where: Prisma.ProductWhereInput = {
+      deletedAt: null,
+      name: { contains: query },
+    };
+    const [rows, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({ where, skip, take: limit, orderBy: { id: "asc" } }),
+      this.prisma.product.count({ where }),
+    ]);
+    return toPageResult(rows.map(toDomain), total, { page, limit });
+  }
+
+  async searchBySku(rawQuery: string, { page, limit }: PageParams): Promise<PageResult<Product>> {
+    const skip = (page - 1) * limit;
+    const q = normalizeSkuQuery(rawQuery);
+    const where: Prisma.ProductWhereInput = {
+      deletedAt: null,
+      sku: { contains: q },
+    };
+    const [rows, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({ where, skip, take: limit, orderBy: { id: "asc" } }),
+      this.prisma.product.count({ where }),
+    ]);
+    return toPageResult(rows.map(toDomain), total, { page, limit });
   }
 
   async create(input: CreateProductData): Promise<Product> {
@@ -78,9 +107,6 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async softDelete(id: number): Promise<void> {
-    await this.prisma.product.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    await this.prisma.product.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 }

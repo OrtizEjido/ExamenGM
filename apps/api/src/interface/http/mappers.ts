@@ -1,8 +1,10 @@
 import type {
   Notification as NotificationDto,
   Product as ProductDto,
+  ProductPage,
 } from "@erp/types";
 import type { Product } from "../../domain/catalog/Product";
+import type { PageResult } from "../../application/catalog/ProductRepository";
 import type { Notification } from "../../domain/notifications/Notification";
 
 /** Mapea la entidad de dominio al contrato compartido (@erp/types): fechas → ISO. */
@@ -18,6 +20,17 @@ export function toProductDto(p: Product): ProductDto {
     createdAt: p.createdAt ? p.createdAt.toISOString() : null,
     updatedAt: p.updatedAt ? p.updatedAt.toISOString() : null,
     deletedAt: p.deletedAt ? p.deletedAt.toISOString() : null,
+  };
+}
+
+/** Mapea una página de productos al contrato compartido. */
+export function toProductPageDto(page: PageResult<Product>): ProductPage {
+  return {
+    items: page.items.map(toProductDto),
+    total: page.total,
+    page: page.page,
+    limit: page.limit,
+    pages: page.pages,
   };
 }
 

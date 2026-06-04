@@ -7,7 +7,8 @@ import {
   DeleteProduct,
   GetProduct,
   ListProducts,
-  SearchProducts,
+  SearchProductsByName,
+  SearchProductsBySku,
 } from "../../application/catalog/useCases";
 import {
   CreateNotification,
@@ -18,20 +19,20 @@ import {
 import { Login } from "../../application/auth/Login";
 import type { LoginInput, LoginResult } from "../../application/auth/Login";
 import type { Product } from "../../domain/catalog/Product";
-import type { CreateProductData } from "../../application/catalog/ProductRepository";
+import type {
+  CreateProductData,
+  PageParams,
+  PageResult,
+} from "../../application/catalog/ProductRepository";
 import type { Notification } from "../../domain/notifications/Notification";
 import type { CreateNotificationData } from "../../application/notifications/NotificationRepository";
 
-/**
- * Composition root.
- * AppServices usa interfaces estructurales (solo el contrato de `execute`) para que
- * los tests puedan inyectar mocks sin instanciar las clases concretas.
- */
 export interface AppServices {
   login: { execute(input: LoginInput): Promise<LoginResult | null> };
-  listProducts: { execute(): Promise<Product[]> };
+  listProducts: { execute(params: PageParams): Promise<PageResult<Product>> };
   getProduct: { execute(id: number): Promise<Product | null> };
-  searchProducts: { execute(query: string): Promise<Product[]> };
+  searchProductsByName: { execute(query: string, params: PageParams): Promise<PageResult<Product>> };
+  searchProductsBySku: { execute(query: string, params: PageParams): Promise<PageResult<Product>> };
   createProduct: { execute(input: CreateProductData): Promise<Product> };
   deleteProduct: { execute(id: number): Promise<void> };
   listNotifications: { execute(userId: number): Promise<Notification[]> };
@@ -49,7 +50,8 @@ export function createContainer(): AppServices {
     login: new Login(authRepository),
     listProducts: new ListProducts(productRepository),
     getProduct: new GetProduct(productRepository),
-    searchProducts: new SearchProducts(productRepository),
+    searchProductsByName: new SearchProductsByName(productRepository),
+    searchProductsBySku: new SearchProductsBySku(productRepository),
     createProduct: new CreateProduct(productRepository),
     deleteProduct: new DeleteProduct(productRepository),
     listNotifications: new ListNotifications(notificationRepository),

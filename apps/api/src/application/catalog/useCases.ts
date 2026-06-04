@@ -1,15 +1,15 @@
 import type { Product } from "../../domain/catalog/Product";
 import type {
   CreateProductData,
+  PageParams,
+  PageResult,
   ProductRepository,
 } from "./ProductRepository";
 
-/** Casos de uso del catálogo. Una responsabilidad cada uno (SRP). */
-
 export class ListProducts {
   constructor(private readonly repo: ProductRepository) {}
-  execute(): Promise<Product[]> {
-    return this.repo.listActive();
+  execute(params: PageParams): Promise<PageResult<Product>> {
+    return this.repo.listPaginated(params);
   }
 }
 
@@ -20,10 +20,17 @@ export class GetProduct {
   }
 }
 
-export class SearchProducts {
+export class SearchProductsByName {
   constructor(private readonly repo: ProductRepository) {}
-  execute(query: string): Promise<Product[]> {
-    return this.repo.search(query);
+  execute(query: string, params: PageParams): Promise<PageResult<Product>> {
+    return this.repo.searchByName(query, params);
+  }
+}
+
+export class SearchProductsBySku {
+  constructor(private readonly repo: ProductRepository) {}
+  execute(query: string, params: PageParams): Promise<PageResult<Product>> {
+    return this.repo.searchBySku(query, params);
   }
 }
 

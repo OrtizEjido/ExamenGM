@@ -10,14 +10,28 @@ export interface CreateProductData {
   description?: string | null;
 }
 
+export interface PageParams {
+  page: number;   // 1-based
+  limit: number;
+}
+
+export interface PageResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
 /**
  * APLICACIÓN — Puerto del repositorio de productos. Los casos de uso dependen de
  * esta abstracción (DIP); la infraestructura (Prisma) la implementa.
  */
 export interface ProductRepository {
-  listActive(): Promise<Product[]>;
+  listPaginated(params: PageParams): Promise<PageResult<Product>>;
   findById(id: number): Promise<Product | null>;
-  search(query: string): Promise<Product[]>;
+  searchByName(query: string, params: PageParams): Promise<PageResult<Product>>;
+  searchBySku(query: string, params: PageParams): Promise<PageResult<Product>>;
   create(input: CreateProductData): Promise<Product>;
   softDelete(id: number): Promise<void>;
 }
