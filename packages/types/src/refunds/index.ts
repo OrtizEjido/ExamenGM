@@ -66,3 +66,22 @@ export type ApproveRefundResult =
 
 // GET /api/refunds/search?q       -> RefundRow[]
 // GET /api/refunds/by-user/:uid   -> RefundRow[]
+
+// ---------------------------------------------------------------------------
+// Contrato NORMALIZADO (API nueva, apps/api).
+// ---------------------------------------------------------------------------
+
+/** Código canónico del estatus (tabla catálogo `refund_statuses`). */
+export type RefundStatusCode = "pending" | "approved" | "rejected" | "done";
+
+export interface Refund {
+  id: Id;
+  saleId: Id | null;
+  userId: Id | null;
+  reason: string | null;
+  /** Monto numérico (normalizado desde TEXT en el legacy). */
+  amount: number | null;
+  status: RefundStatusCode;
+  approvedBy: Id | null;
+  createdAt: string | null;
+}
