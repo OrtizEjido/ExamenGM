@@ -40,3 +40,33 @@ export interface InventoryOverviewRow {
 }
 
 // GET /api/inventory/warehouse/:wh -> InventoryStockRow[]
+
+// ---------------------------------------------------------------------------
+// Contrato NORMALIZADO (API nueva, apps/api). camelCase, FK como id numérico.
+// ---------------------------------------------------------------------------
+
+export interface Warehouse {
+  id: Id;
+  name: string;
+  region: string | null;
+}
+
+/** Vista de inventario: stock de un producto en un almacén (join de 3 tablas). */
+export interface InventoryItem {
+  productId: Id;
+  sku: string | null;
+  productName: string | null;
+  warehouseId: Id;
+  warehouseName: string;
+  warehouseRegion: string | null;
+  quantity: number;
+}
+
+/** Respuesta paginada del inventario. */
+export interface InventoryPage {
+  items: InventoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
