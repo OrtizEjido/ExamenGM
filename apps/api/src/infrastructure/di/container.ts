@@ -4,6 +4,7 @@ import { PrismaNotificationRepository } from "../notifications/PrismaNotificatio
 import { PrismaAuthRepository } from "../auth/PrismaAuthRepository";
 import { PrismaInventoryRepository } from "../inventory/PrismaInventoryRepository";
 import { PrismaRefundRepository } from "../refunds/PrismaRefundRepository";
+import { PrismaReportRepository } from "../reports/PrismaReportRepository";
 import {
   CreateProduct, DeleteProduct, GetProduct,
   ListProducts, SearchProductsByName, SearchProductsBySku,
@@ -20,6 +21,9 @@ import {
   ListRefunds, GetRefund, ListRefundsByUser, ListRefundsByStatus,
   CreateRefund, ApproveRefund, RejectRefund,
 } from "../../application/refunds/useCases";
+import {
+  GetCategorySummary, GetSupplierSummary, GetAggregateSummary,
+} from "../../application/reports/useCases";
 import { Login } from "../../application/auth/Login";
 import type { LoginInput, LoginResult } from "../../application/auth/Login";
 import type { Product } from "../../domain/catalog/Product";
@@ -30,9 +34,7 @@ import type { InventoryItem, Warehouse } from "../../domain/inventory/InventoryI
 import type { PageParams as InvParams, PageResult as InvResult } from "../../application/inventory/InventoryRepository";
 import type { Refund } from "../../domain/refunds/Refund";
 import type { CreateRefundData, RefundStatusCode } from "../../application/refunds/RefundRepository";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type _RefundStatusCode = RefundStatusCode; // re-export for routes
+import type { AggregateSummary, CategorySummary, SupplierSummary } from "../../domain/reports/Report";
 
 export interface AppServices {
   login: { execute(input: LoginInput): Promise<LoginResult | null> };
@@ -52,10 +54,14 @@ export interface AppServices {
   listRefunds: { execute(): Promise<Refund[]> };
   getRefund: { execute(id: number): Promise<Refund | null> };
   listRefundsByUser: { execute(userId: number): Promise<Refund[]> };
-  listRefundsByStatus: { execute(statusCode: import("../../domain/refunds/Refund").RefundStatusCode): Promise<Refund[]> };
+  listRefundsByStatus: { execute(s: RefundStatusCode): Promise<Refund[]> };
   createRefund: { execute(input: CreateRefundData): Promise<Refund> };
   approveRefund: { execute(id: number, approvedBy: number): Promise<Refund | null> };
   rejectRefund: { execute(id: number): Promise<Refund | null> };
+  // reports
+  getCategorySummary: { execute(year: number): Promise<CategorySummary[]> };
+  getSupplierSummary: { execute(year: number): Promise<SupplierSummary[]> };
+  getAggregateSummary: { execute(year: number): Promise<AggregateSummary> };
   // notifications
   listNotifications: { execute(userId: number): Promise<Notification[]> };
   markNotificationRead: { execute(id: number): Promise<Notification | null> };
@@ -68,6 +74,7 @@ export function createContainer(): AppServices {
   const productRepository = new PrismaProductRepository(prisma);
   const inventoryRepository = new PrismaInventoryRepository(prisma);
   const refundRepository = new PrismaRefundRepository(prisma);
+  const reportRepository = new PrismaReportRepository(prisma);
   const notificationRepository = new PrismaNotificationRepository(prisma);
 
   return {
@@ -89,6 +96,9 @@ export function createContainer(): AppServices {
     createRefund: new CreateRefund(refundRepository),
     approveRefund: new ApproveRefund(refundRepository),
     rejectRefund: new RejectRefund(refundRepository),
+    getCategorySummary: new GetCategorySummary(reportRepository),
+    getSupplierSummary: new GetSupplierSummary(reportRepository),
+    getAggregateSummary: new GetAggregateSummary(reportRepository),
     listNotifications: new ListNotifications(notificationRepository),
     markNotificationRead: new MarkNotificationRead(notificationRepository),
     createNotification: new CreateNotification(notificationRepository),

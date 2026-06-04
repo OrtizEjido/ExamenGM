@@ -73,6 +73,41 @@ model Product {
   @@map("products")
 }
 
+// ── Ventas (tablas mínimas para reportes; módulo completo pendiente) ────────
+
+model Supplier {
+  id      Int     @id @default(autoincrement())
+  name    String
+  contact String?
+  country String?
+
+  @@map("suppliers")
+}
+
+model Sale {
+  id           Int        @id @default(autoincrement())
+  userId       Int?       @map("user_id")
+  customerType String?    @map("customer_type")
+  subtotal     Float?
+  total        String?    // TEXT en legacy — normalizar en módulo ventas
+  status       String?
+  createdAt    String?    @map("created_at") // mixed dates — normalizar en módulo ventas
+  items        SaleItem[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id         Int      @id @default(autoincrement())
+  saleId     Int      @map("sale_id")
+  productId  Int      @map("product_id")
+  qty        Int
+  unitPrice  Float?   @map("unit_price")
+  sale       Sale     @relation(fields: [saleId], references: [id])
+
+  @@map("sale_items")
+}
+
 // ── Devoluciones ───────────────────────────────────────────────────────────
 
 // Tabla catálogo de estatus de devolución.

@@ -117,6 +117,61 @@ async function main(): Promise<void> {
     });
   }
 
+  // ── Proveedores ────────────────────────────────────────────────────────────
+  const legacySuppliers = legacy
+    .prepare("SELECT id, name, contact, country FROM suppliers")
+    .all() as Array<Record<string, unknown>>;
+
+  await prisma.saleItem.deleteMany();
+  await prisma.sale.deleteMany();
+  await prisma.supplier.deleteMany();
+  for (const s of legacySuppliers) {
+    await prisma.supplier.create({
+      data: {
+        id: Number(s.id),
+        name: String(s.name),
+        contact: s.contact == null ? null : String(s.contact),
+        country: s.country == null ? null : String(s.country),
+      },
+    });
+  }
+
+  // ── Ventas ─────────────────────────────────────────────────────────────────
+  const legacySales = legacy
+    .prepare("SELECT id, user_id, customer_type, subtotal, total, status, created_at FROM sales")
+    .all() as Array<Record<string, unknown>>;
+
+  for (const s of legacySales) {
+    await prisma.sale.create({
+      data: {
+        id: Number(s.id),
+        userId: s.user_id == null ? null : Number(s.user_id),
+        customerType: s.customer_type == null ? null : String(s.customer_type),
+        subtotal: s.subtotal == null ? null : Number(s.subtotal),
+        total: s.total == null ? null : String(s.total),
+        status: s.status == null ? null : String(s.status),
+        createdAt: s.created_at == null ? null : String(s.created_at),
+      },
+    });
+  }
+
+  // ── Items de venta ─────────────────────────────────────────────────────────
+  const legacySaleItems = legacy
+    .prepare("SELECT id, sale_id, product_id, qty, unit_price FROM sale_items")
+    .all() as Array<Record<string, unknown>>;
+
+  for (const si of legacySaleItems) {
+    await prisma.saleItem.create({
+      data: {
+        id: Number(si.id),
+        saleId: Number(si.sale_id),
+        productId: Number(si.product_id),
+        qty: Number(si.qty),
+        unitPrice: si.unit_price == null ? null : Number(si.unit_price),
+      },
+    });
+  }
+
   // ── Estatus de devoluciones (catálogo) ────────────────────────────────────
   const REFUND_STATUSES = [
     { code: "pending",  labelEs: "Pendiente" },
@@ -174,9 +229,10 @@ async function main(): Promise<void> {
   console.log(
     `Seeded: ${ROLES.length} roles, ${legacyUsers.length} users, ` +
     `${products.length} products, ${legacyWarehouses.length} warehouses, ` +
-    `${legacyStock.length} stock rows, ${REFUND_STATUSES.length} refund statuses, ` +
-    `${legacyRefunds.length} refunds, ${NOTIFICATION_KINDS.length} notification kinds, ` +
-    `${notifications.length} notifications`,
+    `${legacyStock.length} stock rows, ${legacySuppliers.length} suppliers, ` +
+    `${legacySales.length} sales, ${legacySaleItems.length} sale_items, ` +
+    `${REFUND_STATUSES.length} refund statuses, ${legacyRefunds.length} refunds, ` +
+    `${NOTIFICATION_KINDS.length} notification kinds, ${notifications.length} notifications`,
   );
 }
 
