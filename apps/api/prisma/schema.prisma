@@ -49,14 +49,29 @@ model Product {
   @@map("products")
 }
 
-// El estatus leído/no leído es binario → booleano `read` (SQLite lo almacena como 0/1).
+// ── Notificaciones ─────────────────────────────────────────────────────────
+
+// Tabla catálogo de tipos de notificación. Normaliza el campo `kind` (string)
+// del legacy en un id estable con etiqueta en español.
+model NotificationKind {
+  id            Int            @id @default(autoincrement())
+  code          String         @unique   // 'info' | 'warn' | 'alert' | 'system' | 'marketing'
+  labelEs       String         @map("label_es")
+  notifications Notification[]
+
+  @@map("notification_kinds")
+}
+
+// El estatus leído/no leído es binario → booleano `read` (SQLite: 0/1).
+// `kindId` FK a `notification_kinds`; nullable para tolerar registros legacy sin tipo.
 model Notification {
-  id        Int       @id @default(autoincrement())
-  userId    Int       @map("user_id")
+  id        Int               @id @default(autoincrement())
+  userId    Int               @map("user_id")
   message   String?
-  kind      String?
-  read      Boolean   @default(false)
-  createdAt DateTime? @map("created_at")
+  kindId    Int?              @map("kind_id")
+  kind      NotificationKind? @relation(fields: [kindId], references: [id])
+  read      Boolean           @default(false)
+  createdAt DateTime?         @map("created_at")
 
   @@map("notifications")
 }
