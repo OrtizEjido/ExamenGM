@@ -200,7 +200,7 @@ el **ETL** (`prisma/seed.ts` + `etl-helpers.ts`) al poblar la BD nueva:
 | **Inventario** | ✅ | 1500 filas de stock; paginado; filtro por almacén; búsqueda por producto |
 | **Devoluciones** | ✅ | Estatus unificado por catálogo; monto y fecha normalizados; aprobar / rechazar |
 | **Notificaciones** | ✅ | Tipo por tabla catálogo; notificaciones por usuario de sesión; marcar como leída |
-| **Reportes** | ✅ | Resúmenes por categoría / proveedor / agregado; **exportación a Excel (.xlsx)** |
+| **Reportes** | ✅ | Resúmenes por categoría / proveedor / agregado; **exportación a Excel (.xlsx)** | (Fallo de la IA, si crea un reporte pero no el correspondiente al que deberia crearse en ese boton de ese modulo, falto de corregir)
 | Ventas | ⏳ parcial | Tablas migradas (lectura) para alimentar reportes; CRUD pendiente |
 | Compras | ⏳ pendiente | Ruta presente (placeholder) |
 
