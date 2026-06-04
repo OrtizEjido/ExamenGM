@@ -7,7 +7,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Catálogo de productos (esquema NORMALIZADO; mapeado desde el legacy por el ETL).
+// ── Identidad ──────────────────────────────────────────────────────────────
+
+// Tabla catálogo de roles. Normaliza el campo `is_admin` del legacy (0/1)
+// en un código canónico estable listo para crecer (supervisor, viewer…).
+model Role {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique          // 'admin' | 'normal'
+  labelEs     String  @map("label_es")
+  users       User[]
+
+  @@map("roles")
+}
+
+// Contraseña almacenada como AES-256-CBC cifrado (hex), nunca en texto plano.
+// El campo `encryptedPassword` contiene iv:ciphertext separados por ':'.
+model User {
+  id                Int      @id @default(autoincrement())
+  username          String   @unique
+  encryptedPassword String   @map("encrypted_password")
+  roleId            Int      @map("role_id")
+  role              Role     @relation(fields: [roleId], references: [id])
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+// ── Catálogo de productos (esquema NORMALIZADO; mapeado desde el legacy por el ETL). ──
 model Product {
   id          Int       @id @default(autoincrement())
   sku         String?

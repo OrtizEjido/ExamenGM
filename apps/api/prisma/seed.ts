@@ -4,6 +4,13 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import { PrismaClient } from "@prisma/client";
+import {
+  parseIsoDate,
+  parseMixedDate,
+  isRead,
+  normalizeKind,
+} from "./etl-helpers";
+import { encryptPassword } from "../src/infrastructure/crypto/passwordCipher";
 
 /**
  * ETL: carga el seed legacy INMUTABLE en una BD SQLite en memoria y mapea los datos
@@ -13,19 +20,41 @@ import { PrismaClient } from "@prisma/client";
 const here = dirname(fileURLToPath(import.meta.url));
 const prisma = new PrismaClient();
 
-import {
-  parseIsoDate,
-  parseMixedDate,
-  isRead,
-  normalizeKind,
-} from "./etl-helpers";
+/** Catálogo de roles — normaliza el campo `is_admin` (0/1) del legacy. */
+const ROLES = [
+  { id: 1, code: "admin", labelEs: "Administrador" },
+  { id: 2, code: "normal", labelEs: "Usuario" },
+];
 
 async function main(): Promise<void> {
   const sql = readFileSync(join(here, "legacy", "seed_data.sql"), "utf8");
   const legacy = new DatabaseSync(":memory:");
   legacy.exec(sql);
 
-  // --- Catálogo: productos ---
+  // ── Roles (tabla catálogo) ────────────────────────────────────────────────
+  await prisma.user.deleteMany();
+  await prisma.role.deleteMany();
+  for (const r of ROLES) {
+    await prisma.role.create({ data: r });
+  }
+
+  // ── Usuarios con contraseñas cifradas ────────────────────────────────────
+  const legacyUsers = legacy
+    .prepare("SELECT id, username, password, is_admin FROM users")
+    .all() as Array<Record<string, unknown>>;
+
+  for (const u of legacyUsers) {
+    await prisma.user.create({
+      data: {
+        id: Number(u.id),
+        username: String(u.username),
+        encryptedPassword: encryptPassword(String(u.password)),
+        roleId: Number(u.is_admin) === 1 ? 1 : 2, // 1=admin, 2=normal
+      },
+    });
+  }
+
+  // ── Catálogo: productos ───────────────────────────────────────────────────
   const products = legacy
     .prepare(
       "SELECT id, sku, name, description, price, category, supplier_id, created_at, updated_at, deleted_at FROM products",
@@ -50,7 +79,7 @@ async function main(): Promise<void> {
     });
   }
 
-  // --- Notificaciones (con estatus unificado por catálogo) ---
+  // ── Notificaciones ────────────────────────────────────────────────────────
   const notifications = legacy
     .prepare(
       "SELECT id, user_id, message, kind, status, created_at FROM notifications",
@@ -59,7 +88,6 @@ async function main(): Promise<void> {
   legacy.close();
 
   await prisma.notification.deleteMany();
-
   for (const r of notifications) {
     await prisma.notification.create({
       data: {
@@ -74,7 +102,8 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `Imported ${products.length} products and ${notifications.length} notifications`,
+    `Seeded: ${ROLES.length} roles, ${legacyUsers.length} users, ` +
+      `${products.length} products, ${notifications.length} notifications`,
   );
 }
 
