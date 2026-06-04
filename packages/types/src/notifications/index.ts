@@ -69,20 +69,18 @@ export interface DeleteNotificationResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Contrato NORMALIZADO (API nueva, apps/api). Estatus unificado por catálogo:
-// las variantes legacy (read/READ/leido/unread) se reducen a un `code` canónico.
-// La etiqueta visible se resuelve por idioma en el frontend (i18n).
+// Contrato NORMALIZADO (API nueva, apps/api). El estatus leído/no leído es binario,
+// así que se modela como booleano `read` (en BD se almacena 0/1). La etiqueta visible
+// ("Leída"/"No leída" · "Read"/"Unread") se resuelve por idioma en el frontend (i18n).
 // ---------------------------------------------------------------------------
-
-/** Estatus canónico unificado (tabla catálogo `notification_statuses`). */
-export type NotificationStatusCode = "unread" | "read";
 
 export interface Notification {
   id: Id;
   userId: Id;
   message: string | null;
   kind: string | null;
-  status: NotificationStatusCode;
+  /** true = leída, false = no leída. */
+  read: boolean;
   /** ISO 8601 o null. */
   createdAt: string | null;
 }
