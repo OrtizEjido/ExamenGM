@@ -38,6 +38,29 @@
     "error": "Could not load the catalog",
     "empty": "No products"
   },
+  "notifications": {
+    "subtitle": "Your notifications",
+    "colMessage": "Message",
+    "colKind": "Type",
+    "colStatus": "Status",
+    "colDate": "Date",
+    "colActions": "Actions",
+    "markRead": "Mark as read",
+    "markReadOk": "Notification marked as read",
+    "error": "Could not load notifications",
+    "empty": "No notifications",
+    "status": {
+      "unread": "Unread",
+      "read": "Read"
+    },
+    "kind": {
+      "info": "Info",
+      "warn": "Warning",
+      "alert": "Alert",
+      "system": "System",
+      "marketing": "Marketing"
+    }
+  },
   "login": {
     "subtitle": "Sign in to continue",
     "username": "Username",

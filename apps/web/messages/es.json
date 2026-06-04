@@ -38,6 +38,29 @@
     "error": "No se pudo cargar el catálogo",
     "empty": "No hay productos"
   },
+  "notifications": {
+    "subtitle": "Tus notificaciones",
+    "colMessage": "Mensaje",
+    "colKind": "Tipo",
+    "colStatus": "Estado",
+    "colDate": "Fecha",
+    "colActions": "Acciones",
+    "markRead": "Marcar como leída",
+    "markReadOk": "Notificación marcada como leída",
+    "error": "No se pudieron cargar las notificaciones",
+    "empty": "No hay notificaciones",
+    "status": {
+      "unread": "No leída",
+      "read": "Leída"
+    },
+    "kind": {
+      "info": "Información",
+      "warn": "Advertencia",
+      "alert": "Alerta",
+      "system": "Sistema",
+      "marketing": "Marketing"
+    }
+  },
   "login": {
     "subtitle": "Inicia sesión para continuar",
     "username": "Usuario",

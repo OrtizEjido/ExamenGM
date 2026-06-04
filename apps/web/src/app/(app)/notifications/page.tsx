@@ -1,5 +1,5 @@
-import { ComingSoon } from "@/presentation/shared/ComingSoon";
+import { NotificationsView } from "@/presentation/notifications/NotificationsView";
 
 export default function NotificationsPage() {
-  return <ComingSoon module="Notificaciones" />;
+  return <NotificationsView />;
 }
