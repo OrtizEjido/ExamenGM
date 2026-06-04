@@ -405,6 +405,44 @@ módulo que ejercita la **unificación de estatus** mediante tabla catálogo (va
 
 ---
 
+## Entrada 12 — 2026-06-03 18:11 (PDT) — Notificaciones: estatus como booleano `read` (en vez de catálogo)
+
+### Resumen del prompt
+Dado que el estatus de notificación es binario (leído/no leído), modelarlo como **booleano**
+(`0` = no leída, `1` = leída) en vez de una tabla catálogo. La UI lee el booleano y dibuja
+"No leída"/"Leída", y la etiqueta también debe cambiar cuando la app esté en inglés.
+
+### Qué exploré
+<!-- Por completar -->
+
+### Decisiones tomadas y razones
+<!-- Por completar -->
+
+### Qué implementé (resumen)
+- Reemplacé la tabla catálogo `notification_statuses` (y la FK `status_code`) por un campo
+  **`read Boolean @default(false)`** en `Notification` (SQLite lo almacena como 0/1).
+- **Contrato `@erp/types`**: `Notification.status` → **`read: boolean`** (se eliminó
+  `NotificationStatusCode`).
+- **Backend**: dominio/repo/mapper actualizados (`read`); `markRead` → `read: true`;
+  `create` → `read: false`. ETL: `read/READ/leido → true`, `unread → false`.
+- **Frontend**: dominio/adapter/ViewModel con `read`; la View renderiza el Tag según el
+  booleano: `read ? t("status.read") : t("status.unread")` (sigue resolviéndose por idioma).
+
+### Hallazgos / notas
+- Entrada registrada con la skill `erp-journal`.
+- El patrón de **tabla catálogo de estatus** queda reservado para estatus *multivaluados*
+  (p. ej. reembolsos: aprobada/rechazada/pendiente), donde sí aporta. Para binarios, un bool
+  es más simple y correcto.
+- **Verificación backend (curl)**: el contrato expone `read` booleano (`true/false`), sin
+  campo `status`; `mark-read` deja `read:true`.
+- **Verificación frontend (navegador, Claude Preview)**: en **español** los tags muestran
+  "Leída/No leída"; cambiando el locale a **inglés** (verificación temporal, luego revertida)
+  los tags pasan a **"Read/Unread"** y los headers a inglés → la etiqueta no está hardcodeada.
+- `tsc` verde en api y web; `prisma db push --accept-data-loss` (se eliminó la tabla catálogo)
+  + reseed (500 productos, 30 notificaciones).
+
+---
+
 ## Historial de prompts
 
 1. **Prompt 1** — Contexto del examen: leer y entender las instrucciones del archivo
@@ -439,3 +477,5 @@ módulo que ejercita la **unificación de estatus** mediante tabla catálogo (va
 13. **Prompt 13** — Avanzar con el módulo de **Notificaciones** (primer uso de la tabla
     catálogo de estatus para unificar `read/READ/leido/unread`); backend verificado con curl
     y frontend probado en navegador.
+14. **Prompt 14** — Modelar el estatus de notificación como **booleano `read`** (0/1) en vez
+    de catálogo; la UI lee el bool y dibuja No leída/Leída, y debe cambiar también en inglés.
