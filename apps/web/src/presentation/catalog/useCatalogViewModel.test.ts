@@ -71,7 +71,7 @@ describe("useCatalogViewModel", () => {
     act(() => result.current.setNameQuery("café"));
 
     expect(result.current.products).toHaveLength(1);
-    expect(result.current.products[0].name).toBe("Café Especial");
+    expect(result.current.products[0]?.name).toBe("Café Especial");
   });
 
   it("busca por SKU con padding de ceros (14 → 00014)", async () => {
@@ -86,7 +86,7 @@ describe("useCatalogViewModel", () => {
     act(() => result.current.setSkuQuery("14"));
 
     expect(result.current.products).toHaveLength(1);
-    expect(result.current.products[0].sku).toBe("SKU-00014");
+    expect(result.current.products[0]?.sku).toBe("SKU-00014");
   });
 
   it("reload vuelve a llamar al repositorio", async () => {

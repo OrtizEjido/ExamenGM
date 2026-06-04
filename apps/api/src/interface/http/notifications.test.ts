@@ -21,6 +21,7 @@ const makeNotif = (overrides?: Partial<Notification>): Notification => ({
 
 function makeServices(overrides: Partial<AppServices> = {}): AppServices {
   return {
+    login: { execute: vi.fn() },
     listProducts: { execute: vi.fn() },
     getProduct: { execute: vi.fn() },
     searchProducts: { execute: vi.fn() },

@@ -25,6 +25,7 @@ const makeProduct = (overrides?: Partial<Product>): Product => ({
 
 function makeServices(overrides: Partial<AppServices> = {}): AppServices {
   return {
+    login: { execute: vi.fn() },
     listProducts: { execute: vi.fn() },
     getProduct: { execute: vi.fn() },
     searchProducts: { execute: vi.fn() },
