@@ -60,6 +60,15 @@ export interface Product {
   deletedAt: string | null;
 }
 
+/** Respuesta paginada del catálogo. */
+export interface ProductPage {
+  items: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
 /** Cuerpo para crear un producto (POST /api/products). */
 export interface CreateProductInput {
   sku: string;
