@@ -1,6 +1,11 @@
+import { ServicesProvider } from "@/presentation/di/ServicesProvider";
 import { LoginView } from "@/presentation/auth/LoginView";
 
-// Vista de inicio en "/". Sin sidebar (está fuera del grupo de rutas (app)).
+// Vista de inicio en "/". Necesita ServicesProvider para el ViewModel de login.
 export default function LoginPage() {
-  return <LoginView />;
+  return (
+    <ServicesProvider>
+      <LoginView />
+    </ServicesProvider>
+  );
 }

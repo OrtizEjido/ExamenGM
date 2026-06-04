@@ -7,27 +7,27 @@ import {
   MarkNotificationRead,
 } from "@/application/notifications/useCases";
 import { HttpNotificationsRepository } from "@/infrastructure/notifications/HttpNotificationsRepository";
+import { LoginUseCase } from "@/application/auth/LoginUseCase";
+import { HttpAuthRepository } from "@/infrastructure/auth/HttpAuthRepository";
 
 /**
  * Composition root (DI). Único lugar que conoce las implementaciones concretas
- * y las cablea con los casos de uso. Cambiar un adapter se hace solo aquí.
+ * y las cablea con los casos de uso.
  */
 export interface AppServices {
   getDashboardSummary: GetDashboardSummary;
   listProducts: ListProducts;
   listNotifications: ListNotifications;
   markNotificationRead: MarkNotificationRead;
+  loginUseCase: LoginUseCase;
 }
 
 export function createContainer(): AppServices {
-  const dashboardRepository = new InMemoryDashboardRepository();
-  const catalogRepository = new HttpCatalogRepository();
-  const notificationsRepository = new HttpNotificationsRepository();
-
   return {
-    getDashboardSummary: new GetDashboardSummary(dashboardRepository),
-    listProducts: new ListProducts(catalogRepository),
-    listNotifications: new ListNotifications(notificationsRepository),
-    markNotificationRead: new MarkNotificationRead(notificationsRepository),
+    getDashboardSummary: new GetDashboardSummary(new InMemoryDashboardRepository()),
+    listProducts: new ListProducts(new HttpCatalogRepository()),
+    listNotifications: new ListNotifications(new HttpNotificationsRepository()),
+    markNotificationRead: new MarkNotificationRead(new HttpNotificationsRepository()),
+    loginUseCase: new LoginUseCase(new HttpAuthRepository()),
   };
 }

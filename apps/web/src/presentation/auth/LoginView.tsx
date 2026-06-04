@@ -1,32 +1,28 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { Button, Card, Form, Input, Typography, theme as antdTheme } from "antd";
+import { Alert, Button, Card, Form, Input, Typography, theme as antdTheme } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { ThemeToggle } from "@erp/ui";
+import { useLoginViewModel } from "./useLoginViewModel";
 
 interface LoginFormValues {
   username: string;
   password: string;
 }
 
-/**
- * Vista de inicio (entrada a la app). Sin lógica de autenticación todavía: al
- * enviar avanza a la pantalla principal (con sidebar). Las credenciales del seed
- * legacy vienen precargadas para poder entrar de un clic.
- */
+/** Vista de inicio de sesión. Llama al backend real y guarda el JWT en localStorage. */
 export function LoginView() {
-  const router = useRouter();
+  const { loading, error, submit } = useLoginViewModel();
   const t = useTranslations("login");
   const tApp = useTranslations("app");
   const { token } = antdTheme.useToken();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  function handleFinish(_values: LoginFormValues) {
-    router.push("/dashboard");
+  async function handleFinish(values: LoginFormValues) {
+    await submit(values.username, values.password);
   }
 
   return (
@@ -57,11 +53,20 @@ export function LoginView() {
           {t("subtitle")}
         </Typography.Paragraph>
 
+        {error && (
+          <Alert
+            type="error"
+            message={error}
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
         <Form<LoginFormValues>
           layout="vertical"
           requiredMark={false}
           initialValues={{ username: "admin", password: "1234" }}
-          onFinish={handleFinish}
+          onFinish={(values) => void handleFinish(values)}
         >
           <Form.Item
             name="username"
@@ -88,7 +93,7 @@ export function LoginView() {
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0 }}>
-            <Button type="primary" htmlType="submit" block>
+            <Button type="primary" htmlType="submit" block loading={loading}>
               {t("submit")}
             </Button>
           </Form.Item>
