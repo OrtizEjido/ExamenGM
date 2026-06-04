@@ -43,6 +43,28 @@
     "error": "Could not load the catalog",
     "empty": "No products"
   },
+  "reports": {
+    "subtitle": "Reports",
+    "year": "Year",
+    "tabCategory": "By category",
+    "tabSupplier": "By supplier",
+    "tabAggregate": "General summary",
+    "exportXlsx": "Export Excel",
+    "colCategory": "Category",
+    "colSupplier": "Supplier",
+    "colSales": "No. Sales",
+    "colGross": "Gross Amount",
+    "noCategory": "No category",
+    "noSupplier": "No supplier",
+    "aggYear": "Year",
+    "aggSales": "Total sales",
+    "aggQty": "Units sold",
+    "aggSubtotal": "Subtotal",
+    "aggIva": "VAT (16%)",
+    "aggTotal": "Total",
+    "error": "Could not load report",
+    "empty": "No data"
+  },
   "refunds": {
     "subtitle": "Refunds",
     "colId": "ID",

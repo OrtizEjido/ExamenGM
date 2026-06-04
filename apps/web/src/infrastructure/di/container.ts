@@ -10,6 +10,8 @@ import { ListInventory, ListInventoryByWarehouse, SearchInventoryByProductName, 
 import { HttpInventoryRepository } from "@/infrastructure/inventory/HttpInventoryRepository";
 import { ListRefunds, ListRefundsByStatus } from "@/application/refunds/useCases";
 import { HttpRefundRepository } from "@/infrastructure/refunds/HttpRefundRepository";
+import { GetCategorySummary, GetSupplierSummary, GetAggregateSummary } from "@/application/reports/useCases";
+import { HttpReportRepository } from "@/infrastructure/reports/HttpReportRepository";
 
 export interface AppServices {
   getDashboardSummary: GetDashboardSummary;
@@ -25,12 +27,16 @@ export interface AppServices {
   listWarehouses: ListWarehouses;
   listRefunds: ListRefunds;
   listRefundsByStatus: ListRefundsByStatus;
+  getCategorySummary: GetCategorySummary;
+  getSupplierSummary: GetSupplierSummary;
+  getAggregateSummary: GetAggregateSummary;
 }
 
 export function createContainer(): AppServices {
   const catalogRepo = new HttpCatalogRepository();
   const inventoryRepo = new HttpInventoryRepository();
   const refundRepo = new HttpRefundRepository();
+  const reportRepo = new HttpReportRepository();
   return {
     getDashboardSummary: new GetDashboardSummary(new InMemoryDashboardRepository()),
     listProducts: new ListProducts(catalogRepo),
@@ -45,5 +51,8 @@ export function createContainer(): AppServices {
     listWarehouses: new ListWarehouses(inventoryRepo),
     listRefunds: new ListRefunds(refundRepo),
     listRefundsByStatus: new ListRefundsByStatus(refundRepo),
+    getCategorySummary: new GetCategorySummary(reportRepo),
+    getSupplierSummary: new GetSupplierSummary(reportRepo),
+    getAggregateSummary: new GetAggregateSummary(reportRepo),
   };
 }

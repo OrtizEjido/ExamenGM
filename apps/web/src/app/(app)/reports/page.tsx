@@ -1,5 +1,5 @@
-import { ComingSoon } from "@/presentation/shared/ComingSoon";
+import { ReportsView } from "@/presentation/reports/ReportsView";
 
 export default function ReportsPage() {
-  return <ComingSoon module="Reportes" />;
+  return <ReportsView />;
 }
