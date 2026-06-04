@@ -6,6 +6,7 @@ import { createContainer } from "./infrastructure/di/container";
 import { healthRouter } from "./interface/http/healthRoutes";
 import { createCatalogRouter } from "./interface/http/catalogRoutes";
 import { createNotificationRouter } from "./interface/http/notificationRoutes";
+import { createAuthRouter } from "./interface/http/authRoutes";
 
 const PORT = Number(process.env.PORT ?? 4000);
 
@@ -15,6 +16,7 @@ app.use(express.json());
 
 const services = createContainer();
 app.use("/api", healthRouter());
+app.use("/api/auth", createAuthRouter(services));
 app.use("/api/products", createCatalogRouter(services));
 app.use("/api/notifications", createNotificationRouter(services));
 
