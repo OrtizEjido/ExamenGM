@@ -6,11 +6,10 @@ import { ListNotifications, MarkNotificationRead } from "@/application/notificat
 import { HttpNotificationsRepository } from "@/infrastructure/notifications/HttpNotificationsRepository";
 import { LoginUseCase } from "@/application/auth/LoginUseCase";
 import { HttpAuthRepository } from "@/infrastructure/auth/HttpAuthRepository";
-import {
-  ListInventory, ListInventoryByWarehouse,
-  SearchInventoryByProductName, ListWarehouses,
-} from "@/application/inventory/useCases";
+import { ListInventory, ListInventoryByWarehouse, SearchInventoryByProductName, ListWarehouses } from "@/application/inventory/useCases";
 import { HttpInventoryRepository } from "@/infrastructure/inventory/HttpInventoryRepository";
+import { ListRefunds, ListRefundsByStatus } from "@/application/refunds/useCases";
+import { HttpRefundRepository } from "@/infrastructure/refunds/HttpRefundRepository";
 
 export interface AppServices {
   getDashboardSummary: GetDashboardSummary;
@@ -24,11 +23,14 @@ export interface AppServices {
   listInventoryByWarehouse: ListInventoryByWarehouse;
   searchInventoryByProductName: SearchInventoryByProductName;
   listWarehouses: ListWarehouses;
+  listRefunds: ListRefunds;
+  listRefundsByStatus: ListRefundsByStatus;
 }
 
 export function createContainer(): AppServices {
   const catalogRepo = new HttpCatalogRepository();
   const inventoryRepo = new HttpInventoryRepository();
+  const refundRepo = new HttpRefundRepository();
   return {
     getDashboardSummary: new GetDashboardSummary(new InMemoryDashboardRepository()),
     listProducts: new ListProducts(catalogRepo),
@@ -41,5 +43,7 @@ export function createContainer(): AppServices {
     listInventoryByWarehouse: new ListInventoryByWarehouse(inventoryRepo),
     searchInventoryByProductName: new SearchInventoryByProductName(inventoryRepo),
     listWarehouses: new ListWarehouses(inventoryRepo),
+    listRefunds: new ListRefunds(refundRepo),
+    listRefundsByStatus: new ListRefundsByStatus(refundRepo),
   };
 }

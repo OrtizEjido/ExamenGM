@@ -43,6 +43,25 @@
     "error": "Could not load the catalog",
     "empty": "No products"
   },
+  "refunds": {
+    "subtitle": "Refunds",
+    "colId": "ID",
+    "colSaleId": "Sale",
+    "colReason": "Reason",
+    "colAmount": "Amount",
+    "colStatus": "Status",
+    "colDate": "Date",
+    "filterStatus": "Filter by status",
+    "clearFilter": "Clear filter",
+    "error": "Could not load refunds",
+    "empty": "No refunds",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "done": "Done"
+    }
+  },
   "inventory": {
     "subtitle": "Inventory stock",
     "colSku": "SKU",

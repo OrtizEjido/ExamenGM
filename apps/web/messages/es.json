@@ -43,6 +43,25 @@
     "error": "No se pudo cargar el catálogo",
     "empty": "No hay productos"
   },
+  "refunds": {
+    "subtitle": "Devoluciones",
+    "colId": "ID",
+    "colSaleId": "Venta",
+    "colReason": "Motivo",
+    "colAmount": "Monto",
+    "colStatus": "Estado",
+    "colDate": "Fecha",
+    "filterStatus": "Filtrar por estado",
+    "clearFilter": "Limpiar filtro",
+    "error": "No se pudieron cargar las devoluciones",
+    "empty": "Sin devoluciones",
+    "status": {
+      "pending": "Pendiente",
+      "approved": "Aprobada",
+      "rejected": "Rechazada",
+      "done": "Completada"
+    }
+  },
   "inventory": {
     "subtitle": "Stock de inventario",
     "colSku": "SKU",

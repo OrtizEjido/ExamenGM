@@ -1,5 +1,5 @@
-import { ComingSoon } from "@/presentation/shared/ComingSoon";
+import { RefundsView } from "@/presentation/refunds/RefundsView";
 
 export default function RefundsPage() {
-  return <ComingSoon module="Reembolsos" />;
+  return <RefundsView />;
 }
